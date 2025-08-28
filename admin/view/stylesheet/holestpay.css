@@ -1,0 +1,325 @@
+/**
+ * HolestPay Payment Gateway - Admin Stylesheet
+ * Styles for the admin configuration panel
+ */
+
+/* HolestPay Configuration Panel */
+.holestpay-config {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.holestpay-config h3 {
+    color: #333;
+    border-bottom: 2px solid #007cba;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Form Groups */
+.holestpay-form-group {
+    margin-bottom: 20px;
+}
+
+.holestpay-form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.holestpay-form-group input,
+.holestpay-form-group select,
+.holestpay-form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.holestpay-form-group input:focus,
+.holestpay-form-group select:focus,
+.holestpay-form-group textarea:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 0 2px rgba(0, 124, 186, 0.2);
+}
+
+/* Environment Toggle */
+.environment-toggle {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.environment-toggle .form-check {
+    margin-bottom: 10px;
+}
+
+.environment-toggle .form-check-input:checked {
+    background-color: #007cba;
+    border-color: #007cba;
+}
+
+/* Sandbox Notice */
+.sandbox-notice {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-top: 10px;
+    display: none;
+}
+
+.sandbox-notice.show {
+    display: block;
+}
+
+/* API Configuration Section */
+.api-config-section {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.api-config-section h4 {
+    color: #495057;
+    margin-bottom: 15px;
+}
+
+.api-url-display {
+    background: #e9ecef;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+/* Test API Button */
+.test-api-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.test-api-btn:hover {
+    background: #218838;
+}
+
+.test-api-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Country Restrictions */
+.country-restrictions {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.country-select {
+    min-height: 120px;
+}
+
+/* Order Total Limits */
+.order-total-limits {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.limit-inputs {
+    display: flex;
+    gap: 15px;
+}
+
+.limit-inputs .form-group {
+    flex: 1;
+}
+
+/* Validation Styles */
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.text-danger {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Success Messages */
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+    padding: 12px 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Error Messages */
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    padding: 12px 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Help Text */
+.help-text {
+    color: #6c757d;
+    font-size: 12px;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* Action Buttons */
+.holestpay-actions {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.holestpay-actions .btn {
+    margin-right: 10px;
+}
+
+.btn-primary {
+    background-color: #007cba;
+    border-color: #007cba;
+}
+
+.btn-primary:hover {
+    background-color: #005a87;
+    border-color: #005a87;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background-color: #545b62;
+    border-color: #545b62;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .holestpay-config {
+        padding: 15px;
+    }
+    
+    .limit-inputs {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .holestpay-actions .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+}
+
+/* Loading States */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007cba;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Configuration Export */
+.config-export {
+    background: #e7f3ff;
+    border: 1px solid #b3d9ff;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.config-export h5 {
+    color: #005a87;
+    margin-bottom: 10px;
+}
+
+.export-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.export-btn:hover {
+    background: #138496;
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.status-active {
+    background-color: #28a745;
+}
+
+.status-inactive {
+    background-color: #dc3545;
+}
+
+.status-testing {
+    background-color: #ffc107;
+}
+
+/* Tooltips */
+.tooltip-icon {
+    color: #6c757d;
+    cursor: help;
+    margin-left: 5px;
+}
+
+.tooltip-icon:hover {
+    color: #007cba;
+}
