@@ -1,0 +1,23 @@
+<?php
+$_['heading_title']		                          = 'NestPay 3D Plaćanje';
+$_['payment_holestnestpay_pay']		              = 'Plati';
+$_['payment_holestnestpay_not_configured']        = 'Ova metoda plaćanja nije dostupna trenutno. Molimo pokušajte kasnije.';
+$_['payment_holestnestpay_general_error']         = 'Problem sa metodom plaćanja. Molimo pokušajte kasnije ili nas kontaktirajte.';
+$_['payment_holestnestpay_setup_incomplete']      = "Podešavanja metode plaćanja nisu kompletna!";
+$_['payment_holestnestpay_script_missing']   	  = "Instalacija metode plaćanja nije kompletna. Refrenca na glavni skript nije postavljena!";
+$_['payment_holestnestpay_transaction_details']   = "Detalji transakcije:";
+$_['payment_holestnestpay_transaction_failed']    = "Plaćanje nije uspelo. Vaša kartica nije zadužena.";
+$_['payment_holestnestpay_transaction_failed_no_reposonse'] = "Nevalidan odgovor servera banke";
+$_['payment_holestnestpay_transaction_success']    = "Plaćanje je izvršeno uspešno";
+$_['payment_holestnestpay_transaction_success']    = "Plaćanje je izvršeno uspešno";
+$_['payment_holestnestpay_transaction_success_problem']    = "Nismo mogli da potvrdimo uplatu. Moliko kontaktirajte nas da bi je proverili manuelano!";
+$_['payment_holestnestpay_payment_currency']      = "Valuta plaćanja";
+$_['payment_holestnestpay_payment_currency_total']      = "Ukupno u valuti plaćanja";
+$_['payment_holestnestpay_payment_field_oid']             = "Broj narudžbine (platna transakcija)";
+$_['payment_holestnestpay_payment_field_authcode']        = "Autorizacioni kod";
+$_['payment_holestnestpay_payment_field_response']        = "Status transakcije";
+$_['payment_holestnestpay_payment_field_procreturncode']  = "Kod statusa transakcije";
+$_['payment_holestnestpay_payment_field_transid']         = "Broj transakcije";
+$_['payment_holestnestpay_payment_field_extra_trxdate']   = "Datum transakcije";
+$_['payment_holestnestpay_payment_field_mdstatus']        = "Statusni kod 3D transakcije";
+$_['payment_holestnestpay_proceed']        = "Nastavi ...";

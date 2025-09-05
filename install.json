@@ -1,56 +1,139 @@
 {
-    "name": "HolestPay Payment Gateway",
-    "code": "holestpay",
+    "name": "HolestPay Payment Gateway for OpenCart 3 & 4",
     "version": "1.0.0",
-    "author": "HolestPay",
-    "link": "https://holestpay.com",
-    "description": "HolestPay Payment Gateway for OpenCart 3 and 4",
-    "type": "payment",
-    "category": "payment",
-    "license": "MIT",
+    "author": "HolestPay Integration Team",
+    "link": "https://pay.holest.com",
+    "compatibility": "4.0.0.0+",
+    "description": "Complete HolestPay payment and shipping integration for OpenCart with support for multiple payment methods, subscriptions, and real-time shipping cost calculation.",
+    "keywords": [
+        "payment",
+        "holestpay",
+        "gateway",
+        "subscription",
+        "shipping",
+        "vault",
+        "webhook"
+    ],
+    "category": "Payment Gateways",
+    "license": "Commercial",
     "support": {
-        "email": "support@holestpay.com",
-        "url": "https://holestpay.com/support"
+        "email": "support@pay.holest.com",
+        "website": "https://pay.holest.com/support",
+        "documentation": "https://docs.pay.holest.com/opencart"
     },
     "requirements": {
-        "opencart": ">=3.0.0",
-        "php": ">=7.4"
-    },
-    "install": {
-        "sql": [
-            "INSERT INTO `oc_setting` (`store_id`, `code`, `key`, `value`, `serialized`) VALUES (0, 'payment_holestpay', 'payment_holestpay_status', '0', 0)",
-            "INSERT INTO `oc_setting` (`store_id`, `code`, `key`, `value`, `serialized`) VALUES (0, 'payment_holestpay', 'payment_holestpay_sort_order', '0', 0)",
-            "INSERT INTO `oc_setting` (`store_id`, `code`, `key`, `value`, `serialized`) VALUES (0, 'payment_holestpay', 'payment_holestpay_merchant_id', '', 0)",
-            "INSERT INTO `oc_setting` (`store_id`, `code`, `key`, `value`, `serialized`) VALUES (0, 'payment_holestpay', 'payment_holestpay_secret_key', '', 0)",
-            "INSERT INTO `oc_setting` (`store_id`, `code`, `key`, `value`, `serialized`) VALUES (0, 'payment_holestpay', 'payment_holestpay_test_mode', '1', 0)",
-            "INSERT INTO `oc_setting` (`store_id`, `code`, `key`, `value`, `serialized`) VALUES (0, 'payment_holestpay', 'payment_holestpay_total', '0', 0)",
-            "INSERT INTO `oc_setting` (`store_id`, `code`, `key`, `value`, `serialized`) VALUES (0, 'payment_holestpay', 'payment_holestpay_geo_zone_id', '0', 0)"
+        "opencart": "3.0.0.0+",
+        "php": "7.4+",
+        "extensions": [
+            "curl",
+            "json",
+            "openssl"
         ]
     },
-    "uninstall": {
-        "sql": [
-            "DELETE FROM `oc_setting` WHERE `code` = 'payment_holestpay'"
+    "features": [
+        "Multiple HolestPay payment methods support",
+        "Real-time shipping cost calculation",
+        "Subscription and recurring payment support",
+        "Vault token management for saved payment methods",
+        "Webhook integration for order updates",
+        "Admin order management interface",
+        "Multi-environment support (Sandbox/Production)",
+        "Request signing for secure communication",
+        "OpenCart 3 & 4 compatibility"
+    ],
+    "installation": {
+        "type": "extension",
+        "method": "upload",
+        "auto_install": true
+    },
+    "files": {
+        "admin": [
+            "controller/payment/holestpay.php",
+            "model/payment/holestpay.php",
+            "view/template/payment/holestpay.twig",
+            "view/javascript/holestpay-admin.js",
+            "language/en-gb/payment/holestpay.php"
+        ],
+        "catalog": [
+            "controller/payment/holestpay.php",
+            "model/payment/holestpay.php",
+            "model/shipping/holestpay.php",
+            "view/template/payment/holestpay.twig",
+            "view/template/payment/holestpay_order_result.twig",
+            "view/template/payment/holestpay_error.twig",
+            "view/javascript/holestpay-checkout.js",
+            "language/en-gb/payment/holestpay.php",
+            "language/en-gb/shipping/holestpay.php",
+            "language/sr-rs/payment/holestpay.php",
+            "language/sr-rs/shipping/holestpay.php",
+            "language/sr-yu/payment/holestpay.php",
+            "language/sr-yu/shipping/holestpay.php",
+            "language/mk-mk/payment/holestpay.php",
+            "language/mk-mk/shipping/holestpay.php"
+        ],
+        "extension": [
+            "holestpay/holestpay_webhook.php",
+            "holestpay/holestpay_return.php",
+            "holestpay/holestpay_cron.php"
         ]
     },
-    "files": [
-        "admin/controller/extension/payment/holestpay.php",
-        "admin/language/en-gb/extension/payment/holestpay.php",
-        "admin/language/mk-MK/extension/payment/holestpay.php",
-        "admin/language/sr-CS/extension/payment/holestpay.php",
-        "admin/language/sr-RS/extension/payment/holestpay.php",
-        "admin/view/javascript/holestpay.js",
-        "admin/view/stylesheet/holestpay.css",
-        "admin/view/template/extension/payment/holestpay.twig",
-        "catalog/controller/extension/payment/holestpay.php",
-        "catalog/language/en-gb/extension/payment/holestpay.php",
-        "catalog/language/mk-MK/extension/payment/holestpay.php",
-        "catalog/language/sr-CS/extension/payment/holestpay.php",
-        "catalog/language/sr-RS/extension/payment/holestpay.php",
-        "catalog/model/extension/payment/holestpay.php",
-        "catalog/view/javascript/holestpay.js",
-        "catalog/view/theme/default/stylesheet/holestpay.css",
-        "catalog/view/theme/default/template/extension/payment/holestpay_failure.twig",
-        "catalog/view/theme/default/template/extension/payment/holestpay_success.twig",
-        "holestpay.ocmod.xml"
+    "database": {
+        "tables": [
+            "holestpay_config",
+            "holestpay_payment_methods",
+            "holestpay_shipping_methods",
+            "holestpay_vault_tokens",
+            "holestpay_subscriptions"
+        ],
+        "modifications": [
+            {
+                "table": "order",
+                "columns": [
+                    "hpay_uid",
+                    "hpay_status",
+                    "hpay_data"
+                ]
+            }
+        ]
+    },
+    "configuration": {
+        "required_fields": [
+            "payment_holestpay_merchant_site_uid",
+            "payment_holestpay_secret_key"
+        ],
+        "optional_fields": [
+            "payment_holestpay_environment",
+            "payment_holestpay_title",
+            "payment_holestpay_description",
+            "payment_holestpay_sort_order",
+            "payment_holestpay_geo_zone_id",
+            "payment_holestpay_order_status_id",
+            "payment_holestpay_order_status_failed_id"
+        ]
+    },
+    "webhooks": {
+        "endpoint": "extension/holestpay/holestpay_webhook.php",
+        "supported_topics": [
+            "posconfig-updated",
+            "orderupdate", 
+            "payresult"
+        ]
+    },
+    "changelog": [
+        {
+            "version": "1.0.0",
+            "date": "2024-12-19",
+            "changes": [
+                "Initial release",
+                "Complete HolestPay payment integration",
+                "Multiple payment methods support",
+                "Shipping methods with cost calculation",
+                "Subscription and recurring payments",
+                "Vault token management",
+                "Webhook integration",
+                "Admin order management",
+                "OpenCart 3 & 4 compatibility"
+            ]
+        }
     ]
 }

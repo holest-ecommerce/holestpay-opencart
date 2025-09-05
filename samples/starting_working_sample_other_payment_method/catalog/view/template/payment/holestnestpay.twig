@@ -1,0 +1,36 @@
+{% if error == not_configured %}
+<div class="alert alert-danger alert-dismissible">{{ error }}</div>
+{% else %}
+
+{% if err_req %}
+<p style="color:red">{{ err_req }}</p>
+{% endif %}
+
+<script type="text/javascript" src="//cdn.payments.holest.com/ui-compatibile-js/?uiscript=nestpay&platform=opencart"></script>
+<form action="{{ action }}" method="POST" class="form-horizontal holestnestpay-payment-form" id="holestnestpay-payment-form">
+	{{ form_fields }}
+	{% if description %}
+	<p class="holestnestpay-payment">{{ description }}</p>
+	{% endif %}
+	<input order_id="{{ order_id }}" type="submit" class="btn btn-primary payment_holestnestpay_pay_button" value="{{ payment_holestnestpay_pay }}" />
+</form>
+<script type='text/javascript'>
+//FIX USER LOGED OUT AFTER RETURN FROM BANK PAGE/////////////////
+	try{
+		(function(cName, cValue) {
+        let date = new Date();
+        date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        document.cookie = cName + "=" + cValue + "; " + expires + "; path=/";
+		localStorage[cName] = cValue;
+		})('OCSESSID',(function(name) {
+		  const value = `; ${document.cookie}`;
+		  const parts = value.split(`; ${name}=`);
+		  if (parts.length === 2) return parts.pop().split(';').shift();
+		})("OCSESSID"));
+	}catch(ex){
+		
+	}
+	//END FIX//////////////////////////////////////////////////////////
+</script>
+{% endif %}

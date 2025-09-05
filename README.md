@@ -1,234 +1,249 @@
-# HolestPay Payment Gateway for OpenCart 3 and 4
+# HolestPay Payment Gateway for OpenCart 3 & 4
 
-A complete payment gateway integration for OpenCart that connects your store with HolestPay payment processing services.
+A comprehensive payment and shipping integration module for OpenCart that provides full HolestPay functionality including multiple payment methods, subscriptions, shipping cost calculation, and order management.
 
 ## Features
 
-- **Dual Compatibility**: Works with both OpenCart 3 and OpenCart 4
-- **Minimal File Count**: Single comprehensive model file with all functionality
-- **Standard PHP**: Uses standard PHP functions and direct database calls for maximum compatibility
-- **Complete Integration**: Full payment flow from checkout to order completion
-- **Webhook Support**: Real-time payment status updates
-- **Admin Management**: Complete admin panel configuration
-- **Security**: Signature verification for all webhook communications
-- **Flexible Configuration**: Country restrictions, order total limits, and more
+### Payment Processing
+- **Multiple Payment Methods**: Support for all HolestPay payment methods as separate options
+- **Subscription Support**: Recurring payments with MIT (Merchant Initiated Transactions) and COF (Card on File)
+- **Vault Token Management**: Save and reuse payment methods for faster checkout
+- **Request Signing**: Secure communication with digital signatures
+- **Real-time Processing**: Immediate payment processing and status updates
+
+### Shipping Integration
+- **Multiple Shipping Methods**: HolestPay shipping methods with real-time cost calculation
+- **Dynamic Pricing**: Cost calculation based on weight, dimensions, and destination
+- **Zone-based Shipping**: Different rates for domestic and international shipping
+
+### Admin Features
+- **Order Management**: Complete HolestPay command interface in order details
+- **Configuration Management**: Automatic configuration sync via webhooks
+- **Status Monitoring**: Real-time order and payment status tracking
+- **Webhook Integration**: Automatic order updates from HolestPay system
+
+### Technical Features
+- **OpenCart 3 & 4 Compatibility**: Single codebase works with both versions
+- **Multi-environment**: Sandbox and Production environment support
+- **Webhook Processing**: Handles configuration, order updates, and payment results
+- **Database Integration**: Custom tables for HolestPay data storage
+- **JavaScript Integration**: Admin and frontend JavaScript objects
 
 ## Installation
 
-### Method 1: Manual Installation
+### Automatic Installation (Recommended)
+1. Download the `holestpay-opencart.zip` package
+2. Go to Extensions → Installer in your OpenCart admin
+3. Upload the zip file
+4. Go to Extensions → Extensions → Payments
+5. Find "HolestPay Payment Gateway" and click Install
+6. Click Edit to configure the module
 
-1. Upload all files to your OpenCart installation
-2. Go to **Extensions > Extensions** in admin
-3. Find **Payments** in the dropdown
-4. Locate **HolestPay** and click **Install**
-5. Click **Edit** to configure the extension
-
-### Method 2: OCMOD Installation
-
-1. Upload the `holestpay.ocmod.xml` file
-2. Go to **Extensions > Modifications** in admin
-3. Click **Refresh** button
-4. Install the extension as described in Method 1
+### Manual Installation
+1. Extract the zip file
+2. Upload files to your OpenCart directory maintaining the folder structure:
+   ```
+   admin/
+   catalog/
+   install.json
+   ```
+3. Go to Extensions → Extensions → Payments
+4. Find "HolestPay Payment Gateway" and click Install
 
 ## Configuration
 
 ### Required Settings
+1. **Environment**: Choose Sandbox for testing or Production for live transactions
+2. **Merchant Site UID**: Your unique identifier provided by HolestPay
+3. **Secret Key**: Your secret key for secure communication
 
-- **Status**: Enable/disable the payment method
-- **Title**: Display name for customers
-- **Environment**: Choose between Sandbox (testing) and Live (production)
-- **Merchant Site UID**: Your HolestPay merchant identifier
-- **Secret Key**: Your HolestPay API secret key for security
+### Webhook Configuration
+1. Copy the webhook URL from the configuration page
+2. Configure it in your HolestPay panel under webhook settings
+3. HolestPay will automatically send configuration data to your site
 
 ### Optional Settings
+- **Title**: Payment method display name
+- **Description**: Description shown during checkout
+- **Order Status**: Status for successful payments
+- **Failed Order Status**: Status for failed payments
+- **Geo Zone**: Restrict to specific geographical zones
+- **Sort Order**: Display order among payment methods
 
-- **Order Status**: Status to set when payment is successful
-- **Sort Order**: Position in payment method list
-- **Country Restrictions**: Limit to specific countries
-- **Order Total Limits**: Minimum and maximum order amounts
+## Database Structure
 
-## File Structure
+The module creates the following tables:
 
-```
-holestpay-opencart_3_and_4/
-├── admin/
-│   ├── controller/extension/payment/holestpay.php
-│   ├── language/
-│   │   ├── en-gb/extension/payment/holestpay.php
-│   │   ├── sr-RS/extension/payment/holestpay.php
-│   │   ├── sr-CS/extension/payment/holestpay.php
-│   │   └── mk-MK/extension/payment/holestpay.php
-│   ├── view/
-│   │   ├── javascript/holestpay.js
-│   │   ├── stylesheet/holestpay.css
-│   │   └── template/extension/payment/holestpay.twig
-├── catalog/
-│   ├── controller/extension/payment/holestpay.php
-│   ├── language/
-│   │   ├── en-gb/extension/payment/holestpay.php
-│   │   ├── sr-RS/extension/payment/holestpay.php
-│   │   ├── sr-CS/extension/payment/holestpay.php
-│   │   └── mk-MK/extension/payment/holestpay.php
-│   ├── model/extension/payment/holestpay.php
-│   └── view/
-│       ├── javascript/holestpay.js
-│       ├── theme/default/stylesheet/holestpay.css
-│       └── theme/default/template/extension/payment/
-│           ├── holestpay_success.twig
-│           └── holestpay_failure.twig
-├── holestpay.ocmod.xml
-├── install.xml
-└── README.md
-```
+### holestpay_config
+Stores large JSON configuration data from HolestPay.
 
-## How It Works
+### holestpay_payment_methods
+Individual payment methods with their configurations.
 
-### 1. Checkout Process
-- Customer selects HolestPay as payment method
-- Order is created in OpenCart
-- HolestPay order is created via API
-- Customer is redirected to HolestPay payment page
+### holestpay_shipping_methods
+Available shipping methods with cost calculation data.
 
-### 2. Payment Processing
-- Customer completes payment on HolestPay
-- HolestPay sends webhook notification
-- Order status is updated automatically
-- Customer is redirected back to store
+### holestpay_vault_tokens
+Customer saved payment methods for recurring use.
 
-### 3. Webhook Handling
-- Receives real-time payment updates
-- Verifies webhook signatures for security
-- Updates order status and history
-- Logs all activities for debugging
+### holestpay_subscriptions
+Subscription and recurring payment data.
 
-## API Integration
+### Order Table Modifications
+Adds three fields to the order table:
+- `hpay_uid`: HolestPay order identifier
+- `hpay_status`: Combined payment/shipping/fiscal/integration status
+- `hpay_data`: Current order data from HolestPay
 
-The extension integrates with HolestPay's API endpoints:
+## JavaScript Integration
 
-- **Sandbox**: `https://sandbox-api.holestpay.com/api/v1/orders`
-- **Live**: `https://api.holestpay.com/api/v1/orders`
+### HolestPayAdmin
+Available in admin area for:
+- Configuration management
+- Order status monitoring
+- Payment command execution (CAPTURE, VOID, REFUND)
+- Real-time data updates
 
-### API Features
+### HolestPayCheckout
+Available in frontend for:
+- Payment method selection
+- Vault token management
+- Cart data monitoring
+- Payment form presentation
+- Subscription options
 
-- Order creation with customer details
-- Payment URL generation
-- Webhook signature verification
-- Comprehensive error handling
+## Webhook Integration
 
-## Database Changes
+The module handles three webhook topics:
 
-The extension adds two fields to the `order` table:
+### Configuration Webhook
+- Receives HolestPay configuration updates
+- Updates payment and shipping methods
+- Stores large configuration data
 
-- `holestpay_uid`: Stores the HolestPay order identifier
-- `holestpay_status`: Stores the current HolestPay payment status
+### Order Update Webhook
+- Receives order status changes
+- Updates OpenCart order status
+- Syncs HolestPay data
 
-These fields are automatically managed and provide full tracking of payment status.
+### Payment Result Webhook
+- Processes payment completion
+- Updates order status
+- Saves vault tokens
+- Handles subscription setup
+
+## Subscription Support
+
+### Requirements
+- Customer must be logged in
+- Payment method must support MIT or COF
+- Vault token must be saved
+
+### Implementation
+- Uses `/charge` endpoint for recurring payments
+- Automatic payment processing
+- Subscription status management
+- Customer notification system
 
 ## Security Features
 
-- **Signature Verification**: All webhook communications are verified using MD5 signatures
-- **Input Validation**: Comprehensive validation of all incoming data
-- **Error Logging**: Detailed logging for debugging and security monitoring
-- **SQL Injection Protection**: Uses OpenCart's built-in database escaping
+### Request Signing
+All requests to HolestPay are signed using:
+```php
+$signature = hash('sha256', $order_uid . $order_amount . $order_currency . $secret_key);
+```
 
-## Frontend Features
+### Webhook Verification
+All incoming webhooks are verified using HMAC-SHA256:
+```php
+$expected_signature = hash_hmac('sha256', $webhook_data, $secret_key);
+```
 
-### JavaScript Functionality
-- **Real-time Form Validation**: Instant validation of card details, expiry dates, and CVV
-- **Card Number Formatting**: Automatic formatting with spaces for better readability
-- **Payment Processing**: AJAX-based payment processing with loading states
-- **Error Handling**: User-friendly error messages and validation feedback
-- **Responsive Design**: Mobile-optimized interactions and form handling
+## API Integration
 
-### CSS Styling
-- **Modern UI Design**: Clean, professional payment form styling
-- **Interactive Elements**: Hover effects, focus states, and smooth transitions
-- **Responsive Layout**: Mobile-first design that works on all devices
-- **Visual Feedback**: Loading spinners, success/error states, and animations
-- **Accessibility**: High contrast colors and clear visual hierarchy
+### Payment Request Structure
+```json
+{
+    "merchant_site_uid": "your_merchant_uid",
+    "order_uid": "order_123",
+    "order_amount": "99.99",
+    "order_currency": "USD",
+    "payment_method": "payment_method_id",
+    "vault_token_uid": "optional_token",
+    "cof": "none|required",
+    "signature": "request_signature"
+}
+```
 
-## Admin Panel Features
-
-### JavaScript Functionality
-- **Form Validation**: Real-time validation of configuration fields
-- **Environment Toggle**: Dynamic switching between sandbox and live modes
-- **API Testing**: Built-in API connection testing functionality
-- **Configuration Export**: Export settings for backup or migration
-- **Country Restrictions**: Dynamic country selection handling
-
-### CSS Styling
-- **Professional Interface**: Clean, organized configuration panel
-- **Visual Indicators**: Status indicators, loading states, and notifications
-- **Responsive Design**: Works seamlessly on all admin devices
-- **Interactive Elements**: Hover effects and focus states for better UX
+### Shipping Cost Calculation
+```json
+{
+    "shipping_method_id": "shipping_method_id",
+    "destination": {
+        "country": "US",
+        "zone": "CA",
+        "city": "Los Angeles",
+        "postcode": "90210"
+    },
+    "cart": {
+        "total_weight": 2.5,
+        "total_volume": 1000,
+        "total_value": 199.99,
+        "items": [...]
+    }
+}
+```
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Payment Method Not Showing**
-   - Check if extension is enabled
-   - Verify country restrictions
-   - Check order total limits
+**Payment methods not showing**
+- Check if webhook configuration is correct
+- Verify HolestPay has sent configuration data
+- Check database table `holestpay_payment_methods`
 
-2. **Webhook Not Working**
-   - Ensure webhook URL is accessible
-   - Check server firewall settings
-   - Verify webhook signature verification
+**Shipping costs not calculating**
+- Verify shipping methods are configured in HolestPay
+- Check cart weight and dimensions are set
+- Review shipping method configuration
 
-3. **Order Status Not Updating**
-   - Check webhook endpoint accessibility
-   - Verify secret key configuration
-   - Check error logs for details
+**Webhook not receiving data**
+- Verify webhook URL is accessible
+- Check server logs for errors
+- Confirm signature verification is working
 
-### Debug Mode
+### Debug Information
 
-Enable debug logging in OpenCart to see detailed information about:
-- API requests and responses
-- Webhook processing
-- Database operations
-- Error conditions
+Enable debug logging by adding to your config files:
+```php
+define('HOLESTPAY_DEBUG', true);
+```
+
+Check logs in:
+- `system/storage/logs/holestpay.log`
+- Server error logs
+- Browser developer console
 
 ## Support
 
-For technical support or questions about this extension:
-
-- **Documentation**: Check this README and inline code comments
-- **Logs**: Review OpenCart system logs for error details
-- **HolestPay Support**: Contact HolestPay for API-related issues
-
-## Version History
-
-- **1.0.0**: Initial release with full OpenCart 3/4 compatibility
+- **Email**: support@pay.holest.com
+- **Website**: https://pay.holest.com/support
+- **Documentation**: https://docs.pay.holest.com/opencart
 
 ## License
 
-This extension is provided as-is for use with HolestPay payment services.
-
-## Language Support
-
-The extension includes the following language support:
-- **English (en-gb)** - Default language
-- **Serbian (sr-RS)** - Serbian language support (Latin script)
-- **Serbian Cyrillic (sr-CS)** - Serbian language support (Cyrillic script)
-- **Macedonian (mk-MK)** - Macedonian language support
-
-Additional languages can be added by creating new language files in the appropriate `language/` directories following the same format.
-
-## Requirements
-
-- OpenCart 3.0.0 or higher
-- PHP 7.0 or higher
-- cURL extension enabled
-- SSL certificate (recommended for production)
+This module is licensed under commercial license. Please contact HolestPay for licensing terms.
 
 ## Changelog
 
-### Version 1.0.0
+### Version 1.0.0 (2024-12-19)
 - Initial release
-- Full OpenCart 3 and 4 compatibility
-- Complete payment gateway integration
-- Webhook support
-- Admin configuration panel
-- Security features
-- Comprehensive error handling
+- Complete HolestPay payment integration
+- Multiple payment methods support
+- Shipping methods with cost calculation
+- Subscription and recurring payments
+- Vault token management
+- Webhook integration
+- Admin order management
+- OpenCart 3 & 4 compatibility

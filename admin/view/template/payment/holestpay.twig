@@ -1,0 +1,403 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-payment" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-payment" class="form-horizontal">
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label>
+            <div class="col-sm-10">
+              <select name="payment_holestpay_status" id="input-status" class="form-control">
+                {% if payment_holestpay_status %}
+                <option value="1" selected="selected">{{ text_enabled }}</option>
+                <option value="0">{{ text_disabled }}</option>
+                {% else %}
+                <option value="1">{{ text_enabled }}</option>
+                <option value="0" selected="selected">{{ text_disabled }}</option>
+                {% endif %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-environment">{{ entry_environment }}</label>
+            <div class="col-sm-10">
+              <select name="payment_holestpay_environment" id="input-environment" class="form-control">
+                {% for key, value in environments %}
+                {% if key == payment_holestpay_environment %}
+                <option value="{{ key }}" selected="selected">{{ value }}</option>
+                {% else %}
+                <option value="{{ key }}">{{ value }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+              <div class="help-block">{{ help_environment }}</div>
+            </div>
+          </div>
+		  
+		  <div class="form-group" style="background: aliceblue;padding: 15px;">
+            <label class="col-sm-2 control-label">I(P|S|F|I)N - Link / {{ entry_webhook_url }}</label>
+            <div class="col-sm-10">
+              <div class="well">
+                <strong>{{ text_webhook_url_label }} (set this url in HPay panel in site/POS settings for I(P|S|F|I)N - Link !!!):</strong><br/>
+                <code id="webhook-url-display">{{ webhook_url }}</code>
+                <button type="button" class="btn btn-sm btn-default" onclick="copyWebhookUrl()" style="margin-left: 10px;">
+                  <i class="fa fa-copy"></i> Copy
+                </button>
+                <br/><br/>
+                <small>{{ help_webhook_url }}</small>
+                
+                <!-- Connection Status Display (updated by JavaScript) -->
+                <div id="holestpay-connection-status" class="mt-2" style="margin-top: 15px;">
+                  <strong>Connection Status:</strong> 
+                  <span id="connection-status-text" class="text-muted">Checking...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-merchant-site-uid">{{ entry_merchant_site_uid }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_holestpay_merchant_site_uid" value="{{ payment_holestpay_merchant_site_uid }}" placeholder="{{ entry_merchant_site_uid }}" id="input-merchant-site-uid" class="form-control" />
+              {% if error_merchant_site_uid %}
+              <div class="text-danger">{{ error_merchant_site_uid }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_merchant_site_uid }}</div>
+            </div>
+          </div>
+          
+          <div class="form-group required">
+            <label class="col-sm-2 control-label" for="input-secret-key">{{ entry_secret_key }}</label>
+            <div class="col-sm-10">
+              <input type="password" name="payment_holestpay_secret_key" value="{{ payment_holestpay_secret_key }}" placeholder="{{ entry_secret_key }}" id="input-secret-key" class="form-control" />
+              {% if error_secret_key %}
+              <div class="text-danger">{{ error_secret_key }}</div>
+              {% endif %}
+              <div class="help-block">{{ help_secret_key }}</div>
+            </div>
+          </div>
+          
+          
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-title">{{ entry_title }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_holestpay_title" value="{{ payment_holestpay_title }}" placeholder="{{ entry_title }}" id="input-title" class="form-control" />
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-description">{{ entry_description }}</label>
+            <div class="col-sm-10">
+              <textarea name="payment_holestpay_description" placeholder="{{ entry_description }}" id="input-description" class="form-control" rows="3">{{ payment_holestpay_description }}</textarea>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-order-status">{{ entry_order_status }}</label>
+            <div class="col-sm-10">
+              <select name="payment_holestpay_order_status_id" id="input-order-status" class="form-control">
+                {% for order_status in order_statuses %}
+                {% if order_status.order_status_id == payment_holestpay_order_status_id %}
+                <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                {% else %}
+                <option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-order-status-failed">{{ entry_order_status_failed }}</label>
+            <div class="col-sm-10">
+              <select name="payment_holestpay_order_status_failed_id" id="input-order-status-failed" class="form-control">
+                {% for order_status in order_statuses %}
+                {% if order_status.order_status_id == payment_holestpay_order_status_failed_id %}
+                <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                {% else %}
+                <option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-geo-zone">{{ entry_geo_zone }}</label>
+            <div class="col-sm-10">
+              <select name="payment_holestpay_geo_zone_id" id="input-geo-zone" class="form-control">
+                <option value="0">{{ text_all_zones }}</option>
+                {% for geo_zone in geo_zones %}
+                {% if geo_zone.geo_zone_id == payment_holestpay_geo_zone_id %}
+                <option value="{{ geo_zone.geo_zone_id }}" selected="selected">{{ geo_zone.name }}</option>
+                {% else %}
+                <option value="{{ geo_zone.geo_zone_id }}">{{ geo_zone.name }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-sort-order">{{ entry_sort_order }}</label>
+            <div class="col-sm-10">
+              <input type="text" name="payment_holestpay_sort_order" value="{{ payment_holestpay_sort_order }}" placeholder="{{ entry_sort_order }}" id="input-sort-order" class="form-control" />
+            </div>
+          </div>
+          
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <!-- HolestPay Admin Script Container -->
+  <div id="holestpay-admin-container"></div>
+</div>
+
+<script type="text/javascript">
+// Initialize HolestPayAdmin object with proper structure
+window.HolestPayAdmin = window.HolestPayAdmin || {};
+
+// Set core properties
+HolestPayAdmin.admin_base_url = '{{ base }}';
+HolestPayAdmin.frontend_base_url = '{{ catalog }}';
+HolestPayAdmin.site_url = window.location.origin;
+HolestPayAdmin.notify_url = '{{ webhook_url }}';
+HolestPayAdmin.plugin_url = '{{ base }}';
+HolestPayAdmin.ajax_url = '{{ base }}index.php?route=extension/holestpay/payment/holestpay';
+HolestPayAdmin.language = '{{ language_code|default("en") }}';
+HolestPayAdmin.hpaylang = '{{ language_code|default("en") }}';
+HolestPayAdmin.plugin_version = '1.0.0';
+
+// Settings object with configuration
+let hpay_cfg = {{holestpay_pos_config}} || {};
+HolestPayAdmin.settings = {
+    environment: '{{ payment_holestpay_environment }}' || 'sandbox',
+    merchant_site_uid: '{{ payment_holestpay_merchant_site_uid }}' || '',
+};
+
+if(hpay_cfg.POS){
+  HolestPayAdmin.settings['{{ payment_holestpay_environment }}'] = {
+    environment: '{{ payment_holestpay_environment }}' || 'sandbox',
+    merchant_site_uid: '{{ payment_holestpay_merchant_site_uid }}' || '',
+    secret_token: '{{ payment_holestpay_secret_key }}'
+  };
+  HolestPayAdmin.settings['{{ payment_holestpay_environment }}POS'] = hpay_cfg.POS;
+}
+
+/*
+// Load POS configuration if available (this will be populated by webhook)
+// We'll check this via AJAX to get the current configuration status
+var checkEnvironment = HolestPayAdmin.settings.environment;
+var checkMerchantUid = HolestPayAdmin.settings.merchant_site_uid;
+
+console.log('Checking configuration for:', {
+    environment: checkEnvironment,
+    merchant_site_uid: checkMerchantUid
+});
+
+
+
+// Only fetch config if we have both environment and merchant UID
+if (checkEnvironment && checkMerchantUid) {
+    fetch('{{ base }}index.php?route=extension/holestpay/payment/holestpay/getConfig&user_token={{ user_token }}', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        environment: '{{ payment_holestpay_environment }}',
+        merchant_site_uid: '{{ payment_holestpay_merchant_site_uid }}'
+    })
+}).then(response => response.json())
+.then(data => {
+    console.log('Configuration response:', data);
+    if (data.success && data.config) {
+        // Add POS configuration to HolestPayAdmin.settings
+        var posConfigKey = HolestPayAdmin.settings.environment + 'POS';
+        HolestPayAdmin.settings[posConfigKey] = data.config;
+        
+        console.log('Added POS config:', posConfigKey, data.config);
+        
+        // Update connection status
+        setTimeout(updateConnectionStatus, 100);
+    } else {
+        console.log('No configuration found or error:', data);
+        setTimeout(updateConnectionStatus, 100);
+    }
+}).catch(error => {
+    console.log('Error fetching configuration:', error);
+    setTimeout(updateConnectionStatus, 100);
+});
+} else {
+    console.log('Environment or Merchant UID not set, skipping configuration fetch');
+    setTimeout(updateConnectionStatus, 100);
+}
+
+*/
+
+// Labels for internationalization
+HolestPayAdmin.labels = {
+    'error_saving_settings': '{{ text_error_saving_settings|default("Error saving settings") }}',
+    'disconnect_question': '{{ text_disconnect_question|default("Disconnect HolestPay?") }}',
+    'manage_on_hpay': '{{ text_manage_on_hpay|default("Manage on HolestPay") }}',
+    'yes': '{{ text_yes|default("Yes") }}',
+    'no': '{{ text_no|default("No") }}',
+    'cancel': '{{ text_cancel|default("Cancel") }}',
+    'store_to_hpay': '{{ text_store_to_hpay|default("Store to HolestPay") }}',
+    'store_to_hpay_confirm': '{{ text_store_to_hpay_confirm|default("Store order data to HolestPay panel?") }}',
+    'optional_status_change': '{{ text_optional_status_change|default("Optional status change:") }}',
+    'no_status_change': '{{ text_no_status_change|default("-- No status change --") }}',
+    'status_help': '{{ text_status_help|default("Select a status to explicitly set, or leave empty for automatic detection.") }}',
+    'button_store_to_hpay': '{{ button_store_to_hpay|default("Store to HolestPay") }}'
+};
+
+// Load HolestPay Admin script
+if (typeof HPayAdmOC === 'undefined') {
+    var script = document.createElement('script');
+    script.src = '{{ catalog }}/extension/holestpay/admin/view/javascript/holestpay-admin.js';
+    script.onload = function() {
+        if (typeof HPayAdmOC.init !== 'undefined') {
+            HPayAdmOC.init(HolestPayAdmin);
+        }
+    };
+    document.head.appendChild(script);
+} else {
+    HPayAdmOC.init(HolestPayAdmin);
+}
+
+// Utility functions
+function copyWebhookUrl() {
+    var webhookUrl = document.getElementById('webhook-url-display').textContent;
+    navigator.clipboard.writeText(webhookUrl).then(function() {
+        // Show success feedback
+        var button = event.target.closest('button');
+        var originalText = button.innerHTML;
+        button.innerHTML = '<i class="fa fa-check"></i> Copied!';
+        button.className = 'btn btn-sm btn-success';
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.className = 'btn btn-sm btn-default';
+        }, 2000);
+    }).catch(function() {
+        // Fallback for older browsers
+        var textArea = document.createElement('textarea');
+        textArea.value = webhookUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        alert('Webhook URL copied to clipboard');
+    });
+}
+
+// Check connection status based on HolestPayAdmin configuration
+function updateConnectionStatus() {
+    var statusElement = document.getElementById('connection-status-text');
+    
+    if (!HolestPayAdmin || !HolestPayAdmin.settings) {
+        statusElement.innerHTML = '<i class="fa fa-exclamation-circle"></i> Not configured - Please save module settings first';
+        statusElement.className = 'text-warning';
+        return;
+    }
+    
+    var environment = HolestPayAdmin.settings.environment;
+    var merchantSiteUid = HolestPayAdmin.settings.merchant_site_uid;
+    
+    console.log('Connection status check:', { environment, merchantSiteUid, settings: HolestPayAdmin.settings });
+    
+    // Check if we have POS configuration loaded from the database
+    var hasPosConfig = {{ has_pos_config|default('false')|raw }};
+    var hasWebhookSuggestion = {{ has_webhook_suggestion|default('false')|raw }};
+    
+    if (!environment || !merchantSiteUid) {
+        if (hasWebhookSuggestion) {
+            statusElement.innerHTML = '<i class="fa fa-info-circle"></i> Configuration available from webhook - Please save settings to activate';
+            statusElement.className = 'text-info';
+        } else {
+            statusElement.innerHTML = '<i class="fa fa-exclamation-circle"></i> Module not configured - Please enter settings';
+            statusElement.className = 'text-warning';
+        }
+        return;
+    }
+    
+    // Settings are configured, check if we have POS configuration data
+    if (hasPosConfig) {
+        statusElement.innerHTML = '<i class="fa fa-check-circle"></i> Connected to ' + environment + ': ' + merchantSiteUid;
+        statusElement.className = 'text-success';
+        document.querySelectorAll('#webhook-url-display').forEach(el => el.style.color = '#087608');
+    } else {
+        statusElement.innerHTML = '<i class="fa fa-exclamation-triangle"></i> Settings saved, waiting for webhook from HolestPay panel';
+        statusElement.className = 'text-warning';
+    }
+
+// If we have webhook suggestions but fields are empty, pre-populate them for user convenience
+if (hasWebhookSuggestion && (!merchantSiteUid || merchantSiteUid === '')) {
+    var envField = document.querySelector('select[name="payment_holestpay_environment"]');
+    var merchantField = document.querySelector('input[name="payment_holestpay_merchant_site_uid"]');
+    
+    if (envField && '{{ suggested_environment|default("") }}') {
+        envField.value = '{{ suggested_environment|default("") }}';
+        envField.style.backgroundColor = '#e7f3ff'; // Light blue background to indicate auto-filled
+    }
+    
+    if (merchantField && '{{ suggested_merchant_site_uid|default("") }}') {
+        merchantField.value = '{{ suggested_merchant_site_uid|default("") }}';
+        merchantField.style.backgroundColor = '#e7f3ff'; // Light blue background to indicate auto-filled
+    }
+}
+}
+
+// Update connection status when page loads and when settings change
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial check
+    setTimeout(updateConnectionStatus, 1000);
+    
+    // Monitor for changes in environment or merchant site UID fields
+    var environmentField = document.querySelector('select[name="payment_holestpay_environment"]');
+    var merchantField = document.querySelector('input[name="payment_holestpay_merchant_site_uid"]');
+    
+    if (environmentField) {
+        environmentField.addEventListener('change', function() {
+            HolestPayAdmin.settings.environment = this.value;
+            setTimeout(updateConnectionStatus, 100);
+        });
+    }
+    
+    if (merchantField) {
+        merchantField.addEventListener('input', function() {
+            HolestPayAdmin.settings.merchant_site_uid = this.value;
+            setTimeout(updateConnectionStatus, 100);
+        });
+    }
+});
+</script>
+
+{{ footer }}

@@ -1,60 +1,251 @@
 <?xml version="1.0" encoding="utf-8"?>
 <modification>
-    <name>HolestPay Payment Extension</name>
+    <name>HolestPay Payment Gateway</name>
+    <code>holestpay_payment</code>
     <version>1.0.0</version>
     <author>HolestPay</author>
-    <link>https://holestpay.com</link>
-    <description>HolestPay Payment Gateway for OpenCart 3 and 4</description>
+    <link>https://pay.holest.com</link>
     
-    <!-- Add HolestPay to payment methods -->
-    <file path="catalog/controller/checkout/payment_method.php">
+    <!-- Add HolestPay order fields to order table structure -->
+    <file path="admin/model/sale/order.php">
         <operation>
-            <search><![CDATA[public function index() {]]></search>
-            <add position="after"><![CDATA[
-        // Add HolestPay payment method
-        if ($this->config->get('payment_holestpay_status')) {
-            $this->load->model('extension/payment/holestpay');
-            $holestpay_data = $this->model_extension_payment_holestpay->getMethod($this->session->data['payment_address']);
+            <search><![CDATA[public function addOrder($data) {]]></search>
+            <add position="before"><![CDATA[
+    // HolestPay: Add custom order management methods
+    public function addHolestPayOrderFields($order_id, $hpay_uid = null, $hpay_status = '', $hpay_data = '') {
+        $this->db->query("UPDATE `" . DB_PREFIX . "order` SET 
+            `hpay_uid` = '" . $this->db->escape($hpay_uid ?: $order_id) . "',
+            `hpay_status` = '" . $this->db->escape($hpay_status) . "',
+            `hpay_data` = '" . $this->db->escape($hpay_data) . "'
+            WHERE `order_id` = '" . (int)$order_id . "'");
+    }
+    
+    public function updateHolestPayOrderStatus($order_id, $hpay_status) {
+        $this->db->query("UPDATE `" . DB_PREFIX . "order` SET 
+            `hpay_status` = '" . $this->db->escape($hpay_status) . "'
+            WHERE `order_id` = '" . (int)$order_id . "'");
+    }
+    
+    public function updateHolestPayOrderData($order_id, $hpay_data) {
+        // Get existing data
+        $query = $this->db->query("SELECT `hpay_data` FROM `" . DB_PREFIX . "order` WHERE `order_id` = '" . (int)$order_id . "'");
+        
+        if ($query->num_rows) {
+            $existing_data = json_decode($query->row['hpay_data'], true) ?: array();
+            $new_data = json_decode($hpay_data, true) ?: array();
+            $merged_data = array_merge($existing_data, $new_data);
             
-            if ($holestpay_data) {
-                $method_data['holestpay'] = $holestpay_data;
-            }
+            $this->db->query("UPDATE `" . DB_PREFIX . "order` SET 
+                `hpay_data` = '" . $this->db->escape(json_encode($merged_data)) . "'
+                WHERE `order_id` = '" . (int)$order_id . "'");
         }
+    }
+    
+    public function getHolestPayOrderData($order_id) {
+        $query = $this->db->query("SELECT `hpay_uid`, `hpay_status`, `hpay_data` FROM `" . DB_PREFIX . "order` WHERE `order_id` = '" . (int)$order_id . "'");
+        
+        if ($query->num_rows) {
+            return array(
+                'hpay_uid' => $query->row['hpay_uid'],
+                'hpay_status' => $query->row['hpay_status'],
+                'hpay_data' => json_decode($query->row['hpay_data'], true) ?: array()
+            );
+        }
+        
+        return array('hpay_uid' => null, 'hpay_status' => '', 'hpay_data' => array());
+    }
             ]]></add>
         </operation>
     </file>
     
-    <!-- Add HolestPay to checkout confirmation -->
-    <file path="catalog/controller/checkout/confirm.php">
+    <!-- Add HolestPay admin order management box -->
+    <file path="admin/view/template/sale/order_info.tpl">
         <operation>
-            <search><![CDATA[if ($this->request->server['REQUEST_METHOD'] == 'POST') {]]></search>
+            <search><![CDATA[<div class="tab-content">]]></search>
             <add position="after"><![CDATA[
-        // Handle HolestPay payment
-        if (isset($this->request->post['payment_method']) && $this->request->post['payment_method'] == 'holestpay') {
-            $this->load->model('extension/payment/holestpay');
-            $result = $this->model_extension_payment_holestpay->processPayment($this->session->data['order_id']);
-            
-            if ($result['success']) {
-                $this->response->redirect($result['redirect_url']);
-                return;
-            } else {
-                $this->session->data['error'] = $result['error'];
-                $this->response->redirect($this->url->link('checkout/checkout'));
-                return;
-            }
-        }
+                <!-- HolestPay Admin Order Management Box -->
+                <div class="panel panel-default" id="holestpay-order-management" style="margin: 15px 0;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><i class="fa fa-credit-card"></i> HolestPay Order Management</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div id="holestpay-order-actions">
+                            <p class="text-muted">Loading HolestPay order management tools...</p>
+                        </div>
+                        
+                        <!-- HolestPay Order Details -->
+                        <div id="holestpay-order-details" style="margin-top: 15px;">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <strong>HPay UID:</strong> <span id="hpay-uid">-</span>
+                                </div>
+                                <div class="col-sm-4">
+                                    <strong>HPay Status:</strong> <span id="hpay-status">-</span>
+                                </div>
+                                <div class="col-sm-4">
+                                    <strong>Last Updated:</strong> <span id="hpay-last-updated">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script type="text/javascript">
+                // Initialize HolestPay order management for OpenCart 3
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (typeof HPayAdmOC !== 'undefined') {
+                        HPayAdmOC.context = HPayAdmOC.context || {};
+                        HPayAdmOC.context.orderId = <?php echo $order_id; ?>;
+                        
+                        // Load HolestPay order data
+                        if (HPayAdmOC.setupOrderManagementTools) {
+                            HPayAdmOC.setupOrderManagementTools();
+                        }
+                    }
+                });
+                </script>
             ]]></add>
         </operation>
     </file>
     
-    <!-- Add HolestPay to admin order list -->
-    <file path="admin/controller/sale/order.php">
+    <!-- Add HolestPay admin order management box for Twig template (OC3 with Twig) -->
+    <file path="admin/view/template/sale/order_info.twig">
         <operation>
-            <search><![CDATA[protected function getList() {]]></search>
+            <search><![CDATA[<div class="tab-content">]]></search>
             <add position="after"><![CDATA[
-        // Add HolestPay status column
-        $this->load->model('extension/payment/holestpay');
-        $data['holestpay_statuses'] = $this->model_extension_payment_holestpay->getOrderStatuses();
+                <!-- HolestPay Admin Order Management Box -->
+                <div class="panel panel-default" id="holestpay-order-management" style="margin: 15px 0;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title"><i class="fa fa-credit-card"></i> HolestPay Order Management</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div id="holestpay-order-actions">
+                            <p class="text-muted">Loading HolestPay order management tools...</p>
+                        </div>
+                        
+                        <!-- HolestPay Order Details -->
+                        <div id="holestpay-order-details" style="margin-top: 15px;">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <strong>HPay UID:</strong> <span id="hpay-uid">-</span>
+                                </div>
+                                <div class="col-sm-4">
+                                    <strong>HPay Status:</strong> <span id="hpay-status">-</span>
+                                </div>
+                                <div class="col-sm-4">
+                                    <strong>Last Updated:</strong> <span id="hpay-last-updated">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script type="text/javascript">
+                // Initialize HolestPay order management
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (typeof HPayAdmOC !== 'undefined') {
+                        HPayAdmOC.context = HPayAdmOC.context || {};
+                        HPayAdmOC.context.orderId = {{ order_id }};
+                        
+                        // Load HolestPay order data  
+                        if (HPayAdmOC.setupOrderManagementTools) {
+                            HPayAdmOC.setupOrderManagementTools();
+                        }
+                    }
+                });
+                </script>
+            ]]></add>
+        </operation>
+    </file>
+    
+    <!-- Add HolestPay frontend script loading to header -->
+    <file path="catalog/view/theme/*/template/common/header.tpl">
+        <operation>
+            <search><![CDATA[</head>]]></search>
+            <add position="before"><![CDATA[
+                <!-- HolestPay Frontend Integration -->
+                <?php if (isset($holestpay_enabled) && $holestpay_enabled): ?>
+                <script type="text/javascript">
+                // Initialize HolestPayCheckout object for frontend
+                window.HolestPayCheckout = window.HolestPayCheckout || {};
+                HolestPayCheckout.merchant_site_uid = '<?php echo isset($holestpay_merchant_site_uid) ? $holestpay_merchant_site_uid : ''; ?>';
+                HolestPayCheckout.environment = '<?php echo isset($holestpay_environment) ? $holestpay_environment : 'sandbox'; ?>';
+                HolestPayCheckout.hpay_url = HolestPayCheckout.environment === 'production' 
+                    ? 'https://pay.holest.com' 
+                    : 'https://sandbox.pay.holest.com';
+                HolestPayCheckout.ajax_url = '<?php echo $base; ?>index.php?route=extension/holestpay/payment/holestpay';
+                HolestPayCheckout.site_url = window.location.origin;
+                HolestPayCheckout.hpaylang = '<?php echo isset($language_code) ? substr($language_code, 0, 2) : 'en'; ?>';
+                HolestPayCheckout.cart = <?php echo isset($holestpay_cart_data) ? $holestpay_cart_data : '{}'; ?>;
+                </script>
+                <?php endif; ?>
+            ]]></add>
+        </operation>
+    </file>
+    
+    <!-- Add HolestPay frontend script loading to Twig header -->
+    <file path="catalog/view/theme/*/template/common/header.twig">
+        <operation>
+            <search><![CDATA[</head>]]></search>
+            <add position="before"><![CDATA[
+                <!-- HolestPay Frontend Integration -->
+                {% if holestpay_enabled %}
+                <script type="text/javascript">
+                // Initialize HolestPayCheckout object for frontend
+                window.HolestPayCheckout = window.HolestPayCheckout || {};
+                HolestPayCheckout.merchant_site_uid = '{{ holestpay_merchant_site_uid|default('') }}';
+                HolestPayCheckout.environment = '{{ holestpay_environment|default('sandbox') }}';
+                HolestPayCheckout.hpay_url = HolestPayCheckout.environment === 'production' 
+                    ? 'https://pay.holest.com' 
+                    : 'https://sandbox.pay.holest.com';
+                HolestPayCheckout.ajax_url = '{{ base }}index.php?route=extension/holestpay/payment/holestpay';
+                HolestPayCheckout.site_url = window.location.origin;
+                HolestPayCheckout.hpaylang = '{{ language_code|default('en')|slice(0, 2) }}';
+                HolestPayCheckout.cart = {{ holestpay_cart_data|default('{}')|raw }};
+                </script>
+                {% endif %}
+            ]]></add>
+        </operation>
+    </file>
+    
+    <!-- Add HolestPay shipping method integration to checkout -->
+    <file path="catalog/view/theme/*/template/checkout/shipping_method.tpl">
+        <operation>
+            <search><![CDATA[<?php foreach ($shipping_methods as $shipping_method) { ?>]]></search>
+            <add position="before"><![CDATA[
+                <!-- HolestPay Shipping Methods Integration -->
+                <script type="text/javascript">
+                // Integrate HolestPay shipping methods with checkout
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (typeof HolestPayCheckout !== 'undefined' && HolestPayCheckout.cart) {
+                        // Trigger cart update event for HolestPay shipping integration
+                        var event = new Event('onHpayCartUpdated');
+                        event.cart = HolestPayCheckout.cart;
+                        document.dispatchEvent(event);
+                    }
+                });
+                </script>
+            ]]></add>
+        </operation>
+    </file>
+    
+    <!-- Add HolestPay shipping method integration to Twig checkout -->
+    <file path="catalog/view/theme/*/template/checkout/shipping_method.twig">
+        <operation>
+            <search><![CDATA[{% for shipping_method in shipping_methods %}]]></search>
+            <add position="before"><![CDATA[
+                <!-- HolestPay Shipping Methods Integration -->
+                <script type="text/javascript">
+                // Integrate HolestPay shipping methods with checkout
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (typeof HolestPayCheckout !== 'undefined' && HolestPayCheckout.cart) {
+                        // Trigger cart update event for HolestPay shipping integration
+                        var event = new Event('onHpayCartUpdated');
+                        event.cart = HolestPayCheckout.cart;
+                        document.dispatchEvent(event);
+                    }
+                });
+                </script>
             ]]></add>
         </operation>
     </file>

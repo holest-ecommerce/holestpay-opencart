@@ -1,0 +1,81 @@
+/*HOLEST ENGINEERING 2019*/
+
+body{
+    background-color:#eceaef;
+    font-family:sans-serif;
+    background-image:url("../image/holestnestpaycc.png");
+    background-repeat:no-repeat;
+    background-position:center bottom;
+    background-size:auto 15vh;
+    min-height:100vh;
+}
+
+
+
+*{
+     border-radius:5px;
+}
+
+h1,h3,h2,h4{
+    text-align:center;
+}
+
+p{
+    text-align:center;
+}
+
+p > a{
+    background:#8BC34A;
+    color:white;
+    padding:15px 30px;
+    border-radius:5px;
+    display:inline-block;
+    margin-top:15px;
+    transition-property:background;
+    transition-duration:0.5s;
+    font-weight:bold;
+
+}
+
+ul li{
+    padding:7px;
+    list-style:none;
+}
+
+p > a:hover{
+     background:#4CAF50;
+    
+}
+
+body > div{
+    background:rgba(0,0,0,0.2);
+    width:640px;
+    margin:20px auto;
+    padding:20px;
+}
+
+.order_details{
+    background:rgba(255,255,255,0.5);
+    padding:10px;
+}
+
+.order_details table{
+    width:100%;
+    margin:15px 5px;
+}
+
+.order_details td{
+    font-size:14px;
+}
+
+.order_details thead td{
+    background:rgba(0,0,0,0.2);
+    font-weight:bold;
+    padding:3px;
+    
+}
+
+.table-responsive td{
+    text-align:right;
+
+}

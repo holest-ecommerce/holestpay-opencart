@@ -1,0 +1,130 @@
+{{ header }}
+<div class="container">
+  <ul class="breadcrumb">
+    <li><a href="{{ home }}">{{ text_home }}</a></li>
+    <li><a href="{{ account }}">{{ text_account }}</a></li>
+    <li><a href="{{ order }}">{{ text_order }}</a></li>
+  </ul>
+  
+  <div class="row">{{ column_left }}
+    {% if column_left and column_right %}
+    {% set class = 'col-sm-6' %}
+    {% elseif column_left or column_right %}
+    {% set class = 'col-sm-9' %}
+    {% else %}
+    {% set class = 'col-sm-12' %}
+    {% endif %}
+    
+    <div id="content" class="{{ class }}">{{ content_top }}
+      
+      <!-- Payment Outcome -->
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h1 class="panel-title">{{ payment_outcome_title }}</h1>
+        </div>
+        <div class="panel-body">
+          
+          <!-- Order Information -->
+          <div class="row">
+            <div class="col-sm-6">
+              <strong>{{ text_order_id }}:</strong> #{{ order_id }}
+            </div>
+            <div class="col-sm-6">
+              <strong>{{ text_order_total }}:</strong> {{ order_info.total }}
+            </div>
+          </div>
+          
+          <!-- Note: Order data may have been updated via hpay_forwarded_payment_response -->
+          
+          <!-- Transaction User Info -->
+          {% if transaction_user_info %}
+          <div class="well well-sm" style="margin-top: 20px;">
+            <h4>{{ text_transaction_details }}</h4>
+            <div class="row">
+              {% for key, value in transaction_user_info %}
+              <div class="col-sm-6" style="margin-bottom: 10px;">
+                <strong>{{ key }}:</strong> {{ value }}
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Fiscal HTML from HolestPay -->
+          {% if fiscal_html %}
+          <div class="panel panel-info" style="margin-top: 20px;">
+            <div class="panel-heading">
+              <h4 class="panel-title">{{ text_fiscal_information }}</h4>
+            </div>
+            <div class="panel-body">
+              {{ fiscal_html|raw }}
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Shipping HTML from HolestPay -->
+          {% if shipping_html %}
+          <div class="panel panel-success" style="margin-top: 20px;">
+            <div class="panel-heading">
+              <h4 class="panel-title">{{ text_shipping_information }}</h4>
+            </div>
+            <div class="panel-body">
+              {{ shipping_html|raw }}
+            </div>
+          </div>
+          {% endif %}
+          
+          <!-- Action Buttons -->
+          <div class="buttons clearfix" style="margin-top: 30px;">
+            <div class="pull-right">
+              <a href="{{ continue }}" class="btn btn-primary">{{ button_continue }}</a>
+            </div>
+            <div class="pull-left">
+              <a href="{{ order }}" class="btn btn-default">{{ text_view_order }}</a>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
+      {{ content_bottom }}
+    </div>
+    {{ column_right }}
+  </div>
+</div>
+
+<style>
+.panel-heading h1.panel-title {
+    font-size: 24px;
+    margin: 0;
+}
+
+.transaction-info {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.transaction-info .info-item {
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-bottom: 1px dotted #ddd;
+}
+
+.transaction-info .info-item:last-child {
+    border-bottom: none;
+}
+
+.fiscal-section, .shipping-section {
+    margin-top: 20px;
+}
+
+.fiscal-section .panel-body,
+.shipping-section .panel-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+</style>
+
+{{ footer }}

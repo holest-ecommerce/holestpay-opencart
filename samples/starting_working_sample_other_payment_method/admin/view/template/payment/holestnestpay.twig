@@ -1,0 +1,296 @@
+{{ header }}{{ column_left }}
+<div id="content" class='holesthestpay-config-panel'>
+  <script type="text/javascript" src="{{ payment_holestnestpay_js }}"></script>	
+  <style type="text/css">
+	.holesthestpay-config-panel .form-group{
+		margin-bottom:15px;
+	}
+	</style>
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-payment" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+	    <img class="find_admin_url" src="{{ site_base_url }}extension/holestnestpay/admin/view/image/payment/holestnestpay.png" alt="" style="max-width:40px;float:right;" />
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }} </h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-payment" class="form-horizontal holestnestpay-settings">
+		
+			{% if serial_key %}
+			<div class="form-group">
+				<label class="col-sm-2 control-label" for="enabled_field">{{ holestnestpay_enabled_label }}</label>
+				<div class="col-sm-10">
+				   <input  name="enabled" id="enabled_field" type="checkbox" {% if enabled %} checked="checked" {% endif %} value="yes" />
+				</div>
+			</div>
+			
+			<div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="title_field"><span  data-toggle="tooltip" title="{{ holestnestpay_title_desc }}" >{{ holestnestpay_title_label }} *</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="title" id="title_field" type="text" value="{{ title }}"  />
+				</div>
+			</div>	
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="description_field"><span  data-toggle="tooltip" title="{{ holestnestpay_description_desc }}" >{{ holestnestpay_description_label }}</span></label>
+								<div class="col-sm-10">
+				  <textarea class="form-control"  name="description" id="description_field"  >{{ description }}</textarea>
+				</div>
+			</div>
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="bank_logo_field"><span  data-toggle="tooltip" title="{{ holestnestpay_bank_logo_desc }}" >{{ holestnestpay_bank_logo_label }}</span></label>
+								<div class="col-sm-10">
+				   <input class="form-control"  name="bank_logo_uploadfile" id="bank_logo_field" type="file" accept="image/*"  />
+				   {% if bank_logo %}
+						<span><input type="checkbox" name="bank_logo_remove" />&times;</span><img style="max-width:300px;" src="{{ bank_logo }}" alt="" />
+				   {% endif %}
+				   (in Serbia this is not set here. See bank instruction for your site footer)
+				</div>
+				</div>
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="cc_logo_field"><span  data-toggle="tooltip" title="{{ holestnestpay_cc_logo_desc }}" >{{ holestnestpay_cc_logo_label }}</span></label>
+								<div class="col-sm-10">
+				   <input class="form-control"  name="cc_logo_uploadfile" id="cc_logo_field" type="file" accept="image/*"  />
+				   {% if cc_logo %}
+						<span><input type="checkbox" name="cc_logo_remove" />&times;</span><img style="max-width:300px;" src="{{ cc_logo }}" alt="" />
+				   {% endif %}
+				   (in Serbia this is not set here. See bank instruction for your site footer)
+				</div>
+				</div>
+			<div class="form-group">
+				  <label class="col-sm-2 control-label" for="merchant_currency_field"><span  data-toggle="tooltip" title="{{ holestnestpay_merchant_currency_desc }}" >{{ holestnestpay_merchant_currency_label }} *</span></label>
+				  <div class="col-sm-10">
+				   <select class="form-control"  name="merchant_currency" id="merchant_currency_field" />
+						<option value="">{{ holestnestpay_as_in_order }}</option>
+						{% for currency in currencies %}
+							{% if currency.code == merchant_currency %}
+							<option value="{{ currency.code }}" selected="selected">{{ currency.code }} {{ currency.title }}</option>
+							{% else %}
+							<option value="{{ currency.code }}">{{ currency.code }} {{ currency.title }}</option>
+							{% endif %}
+						{% endfor %}
+					
+				   </select>
+				   (must be your country local currency! Serbia: RSD, N. Macedonia: BAM, Croatia: EUR, Italy: EUR)
+				   (Add it froom System/Localization if not listed RSD, BAM, MKD)
+				   <p style="font-size:10px;color:#565656;">{{ holestnestpay_merchant_currency_note }}</p>
+				</div>
+			</div>
+			<div class="form-group" >
+				<label class="col-sm-2 control-label" for="refresh_exchange_rate_field"><span  data-toggle="tooltip" title="{{ holestnestpay_refresh_exchange_rate_desc }}" >{{ holestnestpay_refresh_exchange_rate_label }}</span></label>
+				<div class="col-sm-10">
+				   <input   name="refresh_exchange_rate" id="refresh_exchange_rate_field" type="checkbox" {% if refresh_exchange_rate %} checked="checked" {% endif %} value="yes" />
+				</div>
+			</div>
+			<div class="form-group" style="display:none;">
+				 
+					<label class="col-sm-2 control-label" for="conversion_rate_adjust_field"><span  data-toggle="tooltip" title="{{ holestnestpay_conversion_rate_adjust_desc }}" >{{ holestnestpay_conversion_rate_adjust_label }}</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="conversion_rate_adjust" id="conversion_rate_adjust_field" type="text" value="{{ conversion_rate_adjust }}"  />
+				</div>
+			</div>	
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="user_language_code_field"><span  data-toggle="tooltip" title="{{ holestnestpay_user_language_code_desc }}" >{{ holestnestpay_user_language_code_label }}</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="user_language_code" id="user_language_code_field" type="text" value="{{ user_language_code }}"  />
+				  (Serbia: sr, BiH: bs)
+				</div>
+			</div>	
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="merchant_id_field"><span  data-toggle="tooltip" title="{{ holestnestpay_merchant_id_desc }}" >{{ holestnestpay_merchant_id_label }} *</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="merchant_id" id="merchant_id_field" type="text" value="{{ merchant_id }}"  />
+				</div>
+			</div>	
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="merchant_username_field"><span  data-toggle="tooltip" title="{{ holestnestpay_merchant_username_desc }}" >{{ holestnestpay_merchant_username_label }} *</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="merchant_username" id="merchant_username_field" type="text" value="{{ merchant_username }}"  />
+				</div>
+			</div>	
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="merchant_password_field"><span  data-toggle="tooltip" title="{{ holestnestpay_merchant_password_desc }}" >{{ holestnestpay_merchant_password_label }} *</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="merchant_password" id="merchant_password_field" type="password" value="{{ merchant_password }}"  />
+				</div>
+			</div>
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="gateway_url_field"><span  data-toggle="tooltip" title="{{ holestnestpay_gateway_url_desc }}" >{{ holestnestpay_gateway_url_label }} *</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="gateway_url" id="gateway_url_field" type="text" value="{{ gateway_url }}"  />
+				</div>
+			</div>	
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="api_url_field"><span  data-toggle="tooltip" title="{{ holestnestpay_api_url_desc }}" >{{ holestnestpay_api_url_label }} *</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="api_url" id="api_url_field" type="text" value="{{ api_url }}"  />
+				</div>
+			</div>	
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="store_key_field"><span  data-toggle="tooltip" title="{{ holestnestpay_store_key_desc }}" >{{ holestnestpay_store_key_label }} *</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="store_key" id="store_key_field" type="text" value="{{ store_key }}"  />
+				</div>
+			</div>	
+						
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="tran_type_field"><span  data-toggle="tooltip" title="{{ holestnestpay_tran_type_desc }}" >{{ holestnestpay_tran_type_label }} *</span></label>
+								<div class="col-sm-10">
+				   <select class="form-control"  name="tran_type" id="tran_type_field" />
+												<option value="PreAuth">{{holestnestpay_preauth_opt}}</option>
+														<option value="Auth">{{holestnestpay_auth_opt}}</option>
+											   </select>
+				   <script type="text/javascript">
+					jQuery(document).ready(function(){
+						jQuery("#tran_type_field").val('{{ tran_type }}');
+					});
+				   </script>
+				</div>
+			</div>
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="refreshtime_field"><span  data-toggle="tooltip" title="{{ holestnestpay_refreshtime_desc }}" >{{ holestnestpay_refreshtime_label }}</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="refreshtime" id="refreshtime_field" type="number" value="{{ refreshtime }}"  placeholder="{{ holestnestpay_refreshtime_placeholder }}"  />
+				  (set number of seconds only if you have long waiting message after card input)
+				</div>
+			</div>	
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="add_bill_to_field"><span  data-toggle="tooltip" title="{{ holestnestpay_add_bill_to_desc }}" >{{ holestnestpay_add_bill_to_label }}</span></label>
+								<div class="col-sm-10">
+				   <input   name="add_bill_to" id="add_bill_to_field" type="checkbox" {% if add_bill_to %} checked="checked" {% endif %} value="yes" />
+				</div>
+			</div>
+			<div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="no_transaction_email_field"><span  data-toggle="tooltip" title="{{ holestnestpay_no_transaction_email_desc }}" >{{ holestnestpay_no_transaction_email_label }}</span></label>
+								<div class="col-sm-10">
+				   <input   name="no_transaction_email" id="no_transaction_email_field" type="checkbox" {% if no_transaction_email %} checked="checked" {% endif %} value="yes" />
+				</div>
+			</div>
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="store_type_field"><span  data-toggle="tooltip" title="{{ holestnestpay_store_type_desc }}" >{{ holestnestpay_store_type_label }} * (must be 3d_pay_hosting)</span></label>
+								<div class="col-sm-10">
+				   <select class="form-control"  name="store_type" id="store_type_field" />
+												<option value="3d_pay_hosting">{{holestnestpay_3d_pay_hosting_opt}}</option>
+														<option value="3d">{{holestnestpay_3d_opt}}</option>
+											   </select>
+				   <script type="text/javascript">
+					jQuery(document).ready(function(){
+						jQuery("#store_type_field").val('{{ store_type }}');
+					});
+				   </script>
+				</div>
+			</div>
+			<!--
+			<div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="instalment_plans_field"><span  data-toggle="tooltip" title="{{ holestnestpay_instalment_plans_desc }}" >{{ holestnestpay_instalment_plans_label }}</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="instalment_plans" id="instalment_plans_field" type="text" value="{{ instalment_plans }}"  placeholder="{{ holestnestpay_instalment_plans_placeholder }}"  />
+				</div>
+			</div>	
+			-->
+			
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="cancel_url_field"><span  data-toggle="tooltip" title="{{ holestnestpay_cancel_url_desc }}" >{{ holestnestpay_cancel_url_label }}</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="cancel_url" id="cancel_url_field" type="text" value="{{ cancel_url }}"  placeholder="{{ holestnestpay_cancel_url_placeholder }}"  />
+				</div>
+			</div>	
+			 <div class="form-group">
+				 
+				<label class="col-sm-2 control-label" for="order_completed_field"><span  data-toggle="tooltip" title="{{ holestnestpay_order_completed_desc }}" >{{ holestnestpay_order_completed_label }}</span></label>
+				<div class="col-sm-10">
+				  <select name="order_completed" id="order_completed_field" class="form-control">
+					{% for order_status in order_statuses %}
+						{% if order_status.order_status_id == order_completed %}
+						<option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+						{% else %}
+						<option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+						{% endif %}
+					{% endfor %}
+				  </select>
+				</div>
+			</div>
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="order_failed_field"><span  data-toggle="tooltip" title="{{ holestnestpay_order_failed_desc }}" >{{ holestnestpay_order_failed_label }}</span></label>
+								<div class="col-sm-10">
+				   <select name="order_failed" id="order_failed_field" class="form-control">
+					{% for order_status in order_statuses %}
+						{% if order_status.order_status_id == order_failed %}
+						<option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+						{% else %}
+						<option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+						{% endif %}
+					{% endfor %}
+				  </select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label" for="sort_order_field"><span  data-toggle="tooltip" title="{{ holestnestpay_sort_order_desc }}" >{{ holestnestpay_sort_order_label }}</span></label>
+				<div class="col-sm-10">
+					<input class="form-control"  name="sort_order" id="sort_order_field" type="text" value="{{ sort_order }}"  />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label" for="geo_zone_id_field"><span  data-toggle="tooltip" title="{{ holestnestpay_sort_geo_zone_id_desc }}" >{{ holestnestpay_sort_geo_zone_id_label }}</span></label>
+				<div class="col-sm-10">
+					<select name="geo_zone_id" id="geo_zone_id_field" class="form-control">
+						<option value="0">{{ text_all_zones }}</option>
+						{% for geo_zone in geo_zones %}
+						{% if geo_zone.geo_zone_id == geo_zone_id %}
+						<option value="{{ geo_zone.geo_zone_id }}" selected="selected">{{ geo_zone.name }}</option>
+						{% else %}
+						<option value="{{ geo_zone.geo_zone_id }}">{{ geo_zone.name }}</option>
+						{% endif %}
+						{% endfor %}
+					</select>
+				</div>
+			</div>
+			{% endif %}
+			 <div class="form-group">
+				 
+					<label class="col-sm-2 control-label" for="serial_key_field"><span  data-toggle="tooltip" title="{{ holestnestpay_serial_key_desc }}" >{{ holestnestpay_serial_key_label }}</span></label>
+								<div class="col-sm-10">
+				  <input class="form-control"  name="serial_key" id="serial_key_field" type="text" value="{{ serial_key }}"  />
+				</div>
+			</div>	
+		</form>
+      </div>
+    </div>
+  </div>
+</div>
+{{ footer }} 

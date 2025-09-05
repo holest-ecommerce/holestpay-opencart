@@ -1,0 +1,170 @@
+I need Opencart 3 & 4 (it should be compatible with both) module for payment method called HolestPay.
+----------------------------------------------------------------------------
+HolestPay has its portal that syncs data with the site.
+HolestPay can in fact have multiple sub-payment methods, but they need to appear on the frontend as separate payment methods.
+HolestPay also has shipping methods. No other integration is required than cost calculation and the ability to list methods, as HolestPay also has multiple shipping methods.
+HolestPay site sync mainly depends on webhooks that can accept configuration and order updates from the HolestPay system.
+Regular integration with VOID|REFUND|CAPTURE commands is not needed, as HolestPay provides a rendered command interface in order details. It's important that the webhook that triggers on order updates can accept data and update the order status.
+Main elements that the site needs to have:
+Admin script loaded at least in the module configuration page and order details page.
+Frontend script loaded at least at checkout but ideally on all pages in the frontend.
+In admin order details, there needs to be a box that is used as a placeholder for Hpay commands that are rendered from the admin script, and they depend on the current status of the order.
+Checkout needs to allow the selection of HolestPay shipping methods, whose cost is calculated as in the Magento & WooCommerce samples you can find under the sample folder.
+HolestPay payment invocation is basically a script call (check presentHPayPayForm from hpay.js)! The request needs to be signed!
+----------------------------------------------------------------------------
+Configuration parameters are only and exclusively:
+Environment
+Merchant Site Uid
+Secret Key
+----------------------------------------------------------------------------
+The user configuring the module needs to see the webhook reception URL in configuration he will set on the HolestPay panel. So the user does not input this in the site setting—you calculate this URL and present it to him so he can copy the URL to paste it on the Hpay panel.
+When there is no configuration for a merchant site uid for an environment, it should be red. When configuration arrives for a merchant site uid for an environment, it should display green and add the "connected to <environment>: <merchant site uid>"
+The HolestPay panel will send configuration to the site's webhook processing URL.
+This configuration setup can be enormous in size, like a few MB.
+You can see how Magento stores this. It uses a table that has an environment field and a mediumtext field to store the HPay JSON configuration for POS (identified by Merchant Site Uid on Environment).
+webhook url must not require login!!!
+----------------------------------------------------------------------------
+HolestPayAdmin should be a JavaScript object present in the admin area.
+HolestPayCheckout should be JavaScript object present in the frontend area. Note it needs to have a property cart that is current cart data. See hpay_data.php from the WooCommerce sample.
+Since Opencart natively supports subscriptions, you also need to add support for that (see /charge request in the WooCommerce sample). Subscriptions are possible only for some HolestPay payment methods that support MIT or COF.
+HolestPay backend commands are invoked from the order details hpay box that renders possible actions. It is important that webhooks can accept the orderupdate topic and sync order data.
+----------------------------------------------------------------------------
+You need to add for orders:
+HPay UID field that should default to the Opencart order identifier, but it may change, so there needs to be a separate field.
+HPay Status holds payment, shipping, fiscal, and integration module statuses as one string. See how it's parsed in the sample codes.
+HPay Data: CAN BE LARGE - mediaumtext at least needed - current full hpay order data associated with the order. It's best to see the Magento module for how this is handled (data merge). 
+----------------------------------------------------------------------------
+Check sample codes you have under the /samples folder and do your best.
+samples/starting_working_sample_other_payment_method is a working OC4 module for another payment method that works (the structure is proper). It lacks a standard installation package ability—it has to be installed by copying files.
+----------------------------------------------------------------------------
+Subscriptions are implemeted in  woocommerce sample - look there for guidance.  See class-wc-hpay-vault-token.php and  public function charge($pay_request, $hpay_method_id, $vault_token_uid){... in  hpay_class.php. 
+For scheluling see wc_check_for_subscriptions_for_charge that is triggered by hpay_15min_run action
+If in webhook for orderupdate or in hpay_forwarded_payment_response you find vault_token_uid field you should save vault token for user.
+vault token data should contain vault_token_uid (needed for /charge), expiration, masked pan, holestpay payment method that was used , ant time of last use
+when saving you should first check if vault token with same vault_token_uid exist and do update instead of insert.
+----------------------------------------------------------------------------
+HolestPay base URL for an environment is:
+SANDBOX: https://sandbox.pay.holest.com/
+PRODUCTION: https://pay.holest.com/
+----------------------------------------------------------------------------
+Main on-site script is hpay.js.
+HPay.loadHPayUI().then(loaded => {...}) provides many UI and other functions.
+----------------------------------------------------------------------------
+VERIFY:
+frontend javascript object HolestPayCheckout exists
+HolestPayCheckout.cart exists
+HolestPayCheckout.merchant_site_uid exists
+HolestPayCheckout.environment exists
+HolestPayCheckout.hpay_url exists
+HolestPayCheckout.site_url exists
+HolestPayCheckout.hpaylang exists
+HolestPayCheckout.POS exists (on checkout, loaded from DB initially)
+----------------------------------------------------------------------------
+VERIFY:
+admin javascript object HolestPayAdmin exists
+HolestPayAdmin.ajax_url
+HolestPayAdmin.hpaylang
+HolestPayAdmin.labels
+HolestPayAdmin.language
+HolestPayAdmin.site_url
+HolestPayAdmin.settings.environment
+HolestPayAdmin.settings.sandbox (would exist if connected to environment == "sandbox")
+HolestPayAdmin.settings.sandboxPOS (would exist if connected to environment == "sandbox")
+HolestPayAdmin.settings.production (would exist if connected to environment == "production")
+HolestPayAdmin.settings.productionPOS (would exist if connected to environment == "production")
+----------------------------------------------------------------------------
+VERIFY:
+multiple Hpay payment methods can be rendered. They must appear on checkout as they are regular different payment methods, not as submethods. The master HolestPay payment method cannot be selected.
+The payment request is invoked with the presentHPayPayForm function.
+The pay_request is signed.
+order_user_url is the URL where the user is redirected after the payment.
+On order_user_url, the user will see the payment outcome title, transaction_user_info object with non-translated values but with translated keys, fiscal_html, and shipping_html from the order Hpay Data.
+order_user_url can (but also may not) have the post parameter hpay_forwarded_payment_response that should be treated in the same way as data arrived over webhook topic == orderupdate.
+----------------------------------------------------------------------------
+VERIFY:
+multiple Hpay shipping methods can be rendered. They must appear on checkout as they are regular different shipping methods, not as submethods. The master HolestPay shipping method cannot be selected.
+In shipping cost calculation, these parameters from the Hpay shipping method configuration should be used:
+Free Above Order Amount
+ShippingCurrency
+Price Table
+After Max Weight Price Per Kg
+Additional cost
+COD cost
+Price Multiplication
+----------------------------------------------------------------------------
+VERIFY:
+you understood that presentHPayPayForm is in hpay.js
+hpay_dialog_open, hpay_alert_dialog... is loaded using HPay.loadHPayUI().then(loaded => { ... from now on you can call hpay_dialog_open globally })
+hpay.js (from the right environment) is loaded at checkout. HPayInit is initialized properly (on the frontend you don't pass secret_key to it and secret_key must not be exposed to the frontend).
+hpay.js (from the right environment) is loaded in the admin order details. HPay is initialized but with secret_key as the last argument of HPayInit so HPay gets admin capabilities.
+It is totally safe to call HPayInit or HPay.loadHPayUI() multiple times.
+eval must be enabled for the site and admin—add the CSP header.
+Loading of iframes from https://sandbox.pay.holest.com/... and https://pay.holest.com/... must be enabled on the site.
+----------------------------------------------------------------------------
+VERIFY:
+order details have a box (a DIV) that displays the highlighted HPay Status, then below there is a div that will hold possible hpay actions that are loaded from the script. See holestpay-admin.js in the magento of the html sample how to render the admin toolbox.
+the webhook accepts the orderupdate topic
+hpay data for the order uses the merge method as in magento when new data arrives via webhook over the webhook orderupdate topic
+the webhook orderupdate topic can update the opencart order status depending on the hpay payment status
+----------------------------------------------------------------------------
+VERIFY:
+when a user changes order items, billing address, shipping address, or shipping method in the Opencart backend, that order_store API call needs to send an order update request to pay.
+order_store must not be executed during a webhook call or during result acceptance over hpay_forwarded_payment_response.
+order_store must not be executed if HPay Status field is not set for order and there are no Enabled fiscal methods.
+If there are no value for HPay Status field and Enabled fiscal methods exists then it should be called.
+In admin details box there should also be button "Store to HPay..." that user can use to invoke order_store no matter what.
+Click on "Store to HPay..." should open modal dialog where user optionaly may choose to also send status ($with_status) in dropdown (see samples).
+Note that order_store normaly does not send status field unless explicitly specified by additionla argument. See magento and woocommerce samples, argumet '$with_status'.
+see public function store_order($order_id, $with_status = null, $noresultawait = false){... and in  hpay_class.php.
+----------------------------------------------------------------------------
+VERIFY:
+Serbian Latin translation exists
+Serbian Cyrillic translation exists
+Macedonian translation exists
+----------------------------------------------------------------------------
+VERIFY: SUBSCRIPTIONS
+the charge method is implemented
+if the payment is for a subscription, the cof parameter passed to pay_request is set to "required"
+only some payment methods can have backend charge ability (can save vault token)
+vault data is saved for the user by their email
+renewal orders will not be charged at least 20 min after creation (and during this time, the order detail will show a message of the time when the first charge will be attempted)
+there should be 3 tries to charge an order (2nd after 24h, 3rd 48h after the 3rd attempt)
+there is a button in order details to invoke charge manually for an unpaid order if the user has a saved vault token uid (there may be multiple vault token uids in which case there must be a radio list to choose). Vault token data should also contain the payment method to be used for the charge.
+the user may see his tokens on checkout only if he is logged in
+the user has options to set default and remove for each token on the checkout page
+vault tokens are related to the payment methods used from which they were created
+
+----------------------------------------------------------------------------
+VERIFY: 
+On checkout in shipping methd selection below HolestPay shipping methid desctiption you should render
+... see magento sample, holestpay-frontend.js, window._hpay_selected_shipping_method function
+let sm_opt = document.createElement("span");
+sm_opt.setAttribute("class", "hpay_sm_options");
+sm_opt.setAttribute("hpay_site_shipping_method", candidate.value);
+sm_opt.setAttribute("hpay_shipping_method_id", m.HPaySiteMethodId);
+Also see window.setup_checkout_address_input in that file.
+....smethod.AdaptCheckout({
+                                        billing: {
+                                            postcode: "*[class*='billing'] input[name='postcode']",
+                                            phone: "*[class*='billing'] input[name='telephone']",
+                                            country: "*[class*='billing'] input[name='country_id'],*[class*='billing'] select[name='country_id']",
+                                            city: "*[class*='billing'] input[name='city']",
+                                            address: "*[class*='billing'] input[name='street[0]']",
+                                            address_num: "*[class*='billing'] input[name='street[1]']"	
+                                        },
+                                        shipping:{
+                                            postcode: "*[class*='shipping'] input[name='postcode']",
+                                            phone: "*[class*='shipping'] input[name='telephone']",
+                                            country: "*[class*='shipping'] input[name='country_id'],*[class*='shipping'] select[name='country_id']",
+                                            city: "*[class*='shipping'] input[name='city']",
+                                            address: "*[class*='shipping'] input[name='street[0]']",
+                                            address_num: "*[class*='shipping'] input[name='street[1]']"
+                                        }
+                                    })... billing and shipping here are selectors for inputs on checkout page.
+									
+----------------------------------------------------------------------------
+VERIFY: 
+You understood that HolestPay payment/shipping/fiscal methods have HPaySiteMethodId to identify them. This value may not (usualy) correspond to opencart method id.									
+
+
+
