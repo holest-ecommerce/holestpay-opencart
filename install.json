@@ -44,7 +44,14 @@
     "installation": {
         "type": "extension",
         "method": "upload",
-        "auto_install": true
+        "auto_install": true,
+        "post_install_script": "install.php",
+        "instructions": [
+            "1. Upload all extension files to your OpenCart installation",
+            "2. Run install.php to copy template files to correct locations",
+            "3. Go to Extensions > Extensions > Payments and install HolestPay",
+            "4. Configure your HolestPay merchant credentials in the settings"
+        ]
     },
     "files": {
         "admin": [

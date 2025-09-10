@@ -20,6 +20,60 @@
       <button type="button" class="close" data-dismiss="alert">&times;</button>
     </div>
     {% endif %}
+    
+    <!-- HolestPay File Sync Status -->
+    {% if sync_result %}
+      {% if sync_result.success %}
+        {% if sync_result.files_synced > 0 or sync_result.files_updated > 0 %}
+        <div class="alert alert-success alert-dismissible">
+          <i class="fa fa-check-circle"></i> 
+          <strong>Files Auto-Synced:</strong> 
+          {{ sync_result.files_synced }} copied, {{ sync_result.files_updated }} updated, {{ sync_result.files_skipped }} up-to-date
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          {% if sync_result.details %}
+          <div class="sync-details" style="margin-top: 10px; font-size: 12px;">
+            {% for detail in sync_result.details %}
+              <div>{{ detail }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-danger alert-dismissible">
+          <i class="fa fa-exclamation-triangle"></i> 
+          <strong>File Sync Failed!</strong> Template files could not be synchronized automatically.
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          
+          {% if sync_result.permission_help %}
+          <div class="permission-help" style="margin-top: 15px;">
+            <h4><i class="fa fa-lock"></i> {{ sync_result.permission_help.title }}</h4>
+            <p>{{ sync_result.permission_help.message }}</p>
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 4px; margin-top: 10px;">
+              {% for instruction in sync_result.permission_help.instructions %}
+                {% if instruction == '' %}
+                  <br/>
+                {% else %}
+                  <div style="font-family: monospace; font-size: 11px;">{{ instruction }}</div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          
+          {% if sync_result.errors %}
+          <div class="sync-errors" style="margin-top: 15px;">
+            <strong>Detailed Errors:</strong>
+            <div style="background: #fff; padding: 10px; border-radius: 4px; margin-top: 5px; max-height: 200px; overflow-y: auto;">
+              {% for error in sync_result.errors %}
+                <div style="color: #d9534f; font-size: 12px; margin-bottom: 5px;">• {{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3>
@@ -118,6 +172,18 @@
           </div>
           
           <div class="form-group">
+            <label class="col-sm-2 control-label" for="input-insert-footer-logotypes">{{ entry_insert_footer_logotypes }}</label>
+            <div class="col-sm-10">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="payment_holestpay_insert_footer_logotypes" value="1" id="input-insert-footer-logotypes" {% if payment_holestpay_insert_footer_logotypes %}checked="checked"{% endif %} />
+                  {{ help_insert_footer_logotypes }}
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
             <label class="col-sm-2 control-label" for="input-order-status">{{ entry_order_status }}</label>
             <div class="col-sm-10">
               <select name="payment_holestpay_order_status_id" id="input-order-status" class="form-control">
@@ -174,41 +240,20 @@
       </div>
     </div>
   </div>
-  
+  <p>&nbsp;</p>
+  <p>*** To connect HolestPay shipping method to you site method, set name of HPay shipping method on HPay panel to be same as your site shipping method name - like 'Flat Rate'.</p>
+  <p>&nbsp;</p>
+  <p>&nbsp;</p>
   <!-- HolestPay Admin Script Container -->
   <div id="holestpay-admin-container"></div>
+  
+  
+
 </div>
 
 <script type="text/javascript">
-// Initialize HolestPayAdmin object with proper structure
-window.HolestPayAdmin = window.HolestPayAdmin || {};
-
-// Set core properties
-HolestPayAdmin.admin_base_url = '{{ base }}';
-HolestPayAdmin.frontend_base_url = '{{ catalog }}';
-HolestPayAdmin.site_url = window.location.origin;
-HolestPayAdmin.notify_url = '{{ webhook_url }}';
-HolestPayAdmin.plugin_url = '{{ base }}';
-HolestPayAdmin.ajax_url = '{{ base }}index.php?route=extension/holestpay/payment/holestpay';
-HolestPayAdmin.language = '{{ language_code|default("en") }}';
-HolestPayAdmin.hpaylang = '{{ language_code|default("en") }}';
-HolestPayAdmin.plugin_version = '1.0.0';
-
-// Settings object with configuration
-let hpay_cfg = {{holestpay_pos_config}} || {};
-HolestPayAdmin.settings = {
-    environment: '{{ payment_holestpay_environment }}' || 'sandbox',
-    merchant_site_uid: '{{ payment_holestpay_merchant_site_uid }}' || '',
-};
-
-if(hpay_cfg.POS){
-  HolestPayAdmin.settings['{{ payment_holestpay_environment }}'] = {
-    environment: '{{ payment_holestpay_environment }}' || 'sandbox',
-    merchant_site_uid: '{{ payment_holestpay_merchant_site_uid }}' || '',
-    secret_token: '{{ payment_holestpay_secret_key }}'
-  };
-  HolestPayAdmin.settings['{{ payment_holestpay_environment }}POS'] = hpay_cfg.POS;
-}
+// Initialize HolestPayAdmin object with data from controller
+window.HolestPayAdmin = {{ holestpay_admin_data|json_encode|raw }};
 
 /*
 // Load POS configuration if available (this will be populated by webhook)

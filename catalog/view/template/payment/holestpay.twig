@@ -12,7 +12,7 @@
   
   <!-- Payment Methods Selection -->
   <div class="form-group">
-    <label class="control-label">{{ text_payment_method }}</label>
+   
     <div id="holestpay-payment-methods">
       <!-- Payment methods will be populated by JavaScript -->
     </div>
@@ -27,16 +27,6 @@
   <!-- Installment Options -->
   <div id="holestpay-installment-options" class="form-group" style="display: none;">
     <!-- Installment options will be populated by JavaScript -->
-  </div>
-  
-  <!-- New Payment Method Section -->
-  <div id="holestpay-new-payment" class="form-group">
-    <div class="checkbox">
-      <label>
-        <input type="checkbox" name="holestpay_save_card" value="1" id="save-card-checkbox">
-        {{ text_save_payment_method }}
-      </label>
-    </div>
   </div>
   
   <!-- Subscription Options -->
@@ -58,7 +48,7 @@
   <!-- Payment Button -->
   <div class="buttons">
     <div class="pull-right">
-      <button type="button" id="holestpay-pay-button" class="btn btn-primary" onclick="HolestPayCheckout.processPayment()">
+      <button type="button" id="holestpay-pay-button" class="btn btn-primary" onclick="HPayFrontOC.processPayment()">
         <i class="fa fa-credit-card"></i> {{ button_confirm }}
       </button>
     </div>
@@ -76,10 +66,7 @@
   display: flex;
   align-items: center;
   padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 #holestpay-payment-form .radio label:hover {
@@ -90,10 +77,23 @@
   margin-right: 10px;
 }
 
-#holestpay-payment-form .radio input[type="radio"]:checked + label,
-#holestpay-payment-form .radio label:has(input[type="radio"]:checked) {
+#holestpay-payment-methods > div:has(input:checked){
   background-color: #e7f3ff;
   border-color: #007bff;
+}
+
+#holestpay-payment-methods > div:has(input:checked) .method-description{
+  display:block;
+  padding:4px;
+}
+
+#holestpay-payment-methods > div{
+
+}
+
+#holestpay-payment-form .radio input[type="radio"]:checked + label,
+#holestpay-payment-form .radio label:has(input[type="radio"]:checked) {
+
 }
 
 #holestpay-method-icon {
@@ -144,69 +144,5 @@
 
 <!-- Initialize HolestPay Checkout -->
 <script type="text/javascript">
-// Initialize HolestPayCheckout object with proper structure
-window.HolestPayCheckout = window.HolestPayCheckout || {};
-
-// Parse configuration data
-var checkoutConfig = {{ holestpay_checkout_data|raw }};
-
-// Set core properties matching WooCommerce/Magento structure
-HolestPayCheckout.merchant_site_uid = checkoutConfig.merchant_site_uid || '{{ merchant_site_uid }}';
-HolestPayCheckout.hpay_url = checkoutConfig.environment === 'production' 
-    ? 'https://pay.holest.com' 
-    : 'https://sandbox.pay.holest.com';
-HolestPayCheckout.site_url = window.location.origin;
-HolestPayCheckout.ajax_url = checkoutConfig.urls ? checkoutConfig.urls.confirm : '{{ base }}index.php?route=extension/holestpay/payment/holestpay/confirm';
-HolestPayCheckout.language = '{{ language_code|default("en") }}';
-HolestPayCheckout.hpaylang = '{{ language_code|default("en") }}';
-HolestPayCheckout.plugin_version = '1.0.0';
-HolestPayCheckout.environment = checkoutConfig.environment || '{{ environment }}';
-HolestPayCheckout.dock_payment_methods = true;
-HolestPayCheckout.hpay_autoinit = 1;
-
-// Cart data (critical property that gets updated)
-HolestPayCheckout.cart = checkoutConfig.cart || {};
-
-// Labels for internationalization
-HolestPayCheckout.labels = {
-    'error_contact_us': '{{ text_error_contact_us|default("Error, please contact us for assistance") }}',
-    'remove_token_confirm': '{{ text_remove_token_confirm|default("Please confirm you want to remove payment token") }}',
-    'error': '{{ text_error|default("Error") }}',
-    'Payment refused': '{{ text_payment_refused|default("Payment refused") }}',
-    'Payment failed': '{{ text_payment_failed|default("Payment failed") }}',
-    'Payment canceled': '{{ text_payment_canceled|default("Payment canceled") }}',
-    'Payment error': '{{ text_payment_error|default("Payment error") }}',
-    'Try to pay again': '{{ text_try_again|default("Try to pay again") }}',
-    'Ordering as a company?': '{{ text_ordering_as_company|default("Ordering as a company?") }}',
-    'Company Tax ID': '{{ text_company_tax_id|default("Company Tax ID") }}',
-    'Company Register ID': '{{ text_company_register_id|default("Company Register ID") }}',
-    'Company Name': '{{ text_company_name|default("Company Name") }}'
-};
-
-// Load HolestPay Checkout script if not already loaded
-if (typeof HolestPayCheckout.init === 'undefined') {
-    var script = document.createElement('script');
-    script.src = '{{ base }}catalog/view/javascript/holestpay-checkout.js';
-    script.onload = function() {
-        if (typeof HolestPayCheckout.init !== 'undefined') {
-            HolestPayCheckout.init();
-        }
-    };
-    document.head.appendChild(script);
-} else {
-    // Already loaded, just initialize
-    HolestPayCheckout.init();
-}
-
-// Integrate with OpenCart's checkout process
-$(document).ready(function() {
-    // Override the default checkout confirmation
-    $('#button-confirm').click(function(e) {
-        var selectedPayment = $('input[name="payment_method"]:checked').val();
-        if (selectedPayment === 'holestpay') {
-            e.preventDefault();
-            HolestPayCheckout.processPayment();
-        }
-    });
-});
+{{holestpay_checkout_render}}
 </script>

@@ -17,6 +17,7 @@ $_['text_card_ending'] = 'картица која завршава на';
 $_['text_expires'] = 'истиче';
 $_['text_set_default'] = 'Постави као подразумевани';
 $_['text_remove'] = 'Уклони';
+$_['text_use_other'] = 'Користи други...';
 $_['text_default'] = 'Подразумевани';
 
 // Order result page  
@@ -58,3 +59,40 @@ $_['success_subscription'] = 'Успех: Претплата је креиран
 // Button
 $_['button_confirm'] = 'Потврди плаћање';
 $_['button_continue'] = 'Настави';
+
+// Additional labels for frontend
+$_['text_error_contact_us'] = 'Грешка, молимо контактирајте нас за помоћ';
+$_['text_remove_token_confirm'] = 'Молимо потврдите да желите да уклоните токен за плаћање';
+$_['text_error'] = 'Грешка';
+$_['text_payment_refused'] = 'Плаћање одбијено';
+$_['text_payment_canceled'] = 'Плаћање отказано';
+$_['text_payment_error'] = 'Грешка у плаћању';
+$_['text_try_again'] = 'Покушајте поново да платите';
+$_['text_ordering_as_company'] = 'Наручујете као компанија?';
+$_['text_company_tax_id'] = 'ПИБ компаније';
+$_['text_company_register_id'] = 'Матични број компаније';
+$_['text_company_name'] = 'Назив компаније';
+
+// Order result page labels
+$_['text_order_items'] = 'Ставке наруџбине';
+$_['text_product_name'] = 'Назив производа';
+$_['text_model'] = 'Модел';
+$_['text_quantity'] = 'Количина';
+$_['text_price'] = 'Цена';
+$_['text_total'] = 'Укупно';
+$_['text_billing_address'] = 'Адреса за наплату';
+$_['text_shipping_address'] = 'Адреса за доставу';
+$_['text_shipping_cost'] = 'Трошкови доставу';
+$_['text_telephone'] = 'Тел';
+$_['text_email'] = 'Email';
+
+// Transaction details labels
+$_['text_order_uid'] = 'UID наруџбе';
+$_['text_authorization_code'] = 'Код за ауторизацију';
+$_['text_payment_status'] = 'Статус плаћања';
+$_['text_transaction_status_code'] = 'Код статуса трансакције';
+$_['text_transaction_id'] = 'ID трансакције';
+$_['text_transaction_time'] = 'Време трансакције';
+$_['text_3d_status_code'] = 'Код статуса за 3D трансакцију';
+$_['text_amount_order_currency'] = 'Износ у валути наруџбе';
+$_['text_amount_payment_currency'] = 'Износ у валути плаћања';

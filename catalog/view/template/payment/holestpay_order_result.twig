@@ -19,9 +19,7 @@
       
       <!-- Payment Outcome -->
       <div class="panel panel-default">
-        <div class="panel-heading">
-          <h1 class="panel-title">{{ payment_outcome_title }}</h1>
-        </div>
+        
         <div class="panel-body">
           
           <!-- Order Information -->
@@ -30,19 +28,132 @@
               <strong>{{ text_order_id }}:</strong> #{{ order_id }}
             </div>
             <div class="col-sm-6">
-              <strong>{{ text_order_total }}:</strong> {{ order_info.total }}
+              <strong>{{ text_order_total }}:</strong> {{ order_info.total|number_format(2) }}
             </div>
+            
+            <!-- Order Items -->
+            <div class="col-sm-12" style="margin-top: 20px;">
+              <h4>{{ text_order_items|default('Order Items') }}</h4>
+              <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                  <thead>
+                    <tr>
+                      <th>{{ text_product_name|default('Product Name') }}</th>
+                      <th>{{ text_model|default('Model') }}</th>
+                      <th class="text-right">{{ text_quantity|default('Quantity') }}</th>
+                      <th class="text-right">{{ text_price|default('Price') }}</th>
+                      <th class="text-right">{{ text_total|default('Total') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for product in order_products %}
+                    <tr>
+                      <td>{{ product.name }}</td>
+                      <td>{{ product.model }}</td>
+                      <td class="text-right">{{ product.quantity }}</td>
+                      <td class="text-right">{{ product.price|number_format(2) }}</td>
+                      <td class="text-right">{{ product.total|number_format(2) }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <!-- Billing Address -->
+            <div class="col-sm-6" style="margin-top: 20px;">
+              <h4>{{ text_billing_address|default('Billing Address') }}</h4>
+              <div class="well well-sm">
+                <strong>
+                  {% if order_info.payment_firstname and order_info.payment_lastname %}
+                    {{ order_info.payment_firstname }} {{ order_info.payment_lastname }}
+                  {% else %}
+                    {{ order_info.shipping_firstname }} {{ order_info.shipping_lastname }}
+                  {% endif %}
+                </strong><br>
+                {% if (order_info.payment_company and order_info.payment_company != '') or (not order_info.payment_company and order_info.shipping_company) %}
+                  {% if order_info.payment_company and order_info.payment_company != '' %}
+                    {{ order_info.payment_company }}
+                  {% else %}
+                    {{ order_info.shipping_company }}
+                  {% endif %}<br>
+                {% endif %}
+                {% if order_info.payment_address_1 and order_info.payment_address_1 != '' %}
+                  {{ order_info.payment_address_1 }}
+                {% else %}
+                  {{ order_info.shipping_address_1 }}
+                {% endif %}<br>
+                {% if (order_info.payment_address_2 and order_info.payment_address_2 != '') or (not order_info.payment_address_2 and order_info.shipping_address_2) %}
+                  {% if order_info.payment_address_2 and order_info.payment_address_2 != '' %}
+                    {{ order_info.payment_address_2 }}
+                  {% else %}
+                    {{ order_info.shipping_address_2 }}
+                  {% endif %}<br>
+                {% endif %}
+                {% if order_info.payment_city and order_info.payment_postcode %}
+                  {{ order_info.payment_city }}, {{ order_info.payment_postcode }}
+                {% else %}
+                  {{ order_info.shipping_city }}, {{ order_info.shipping_postcode }}
+                {% endif %}<br>
+                {% if order_info.payment_country and order_info.payment_country != '' %}
+                  {{ order_info.payment_country }}
+                {% else %}
+                  {{ order_info.shipping_country }}
+                {% endif %}<br>
+                {% if order_info.telephone %}{{ text_telephone|default('Tel') }}: {{ order_info.telephone }}<br>{% endif %}
+                {% if order_info.email %}{{ text_email|default('Email') }}: {{ order_info.email }}{% endif %}
+              </div>
+            </div>
+            
+            <!-- Shipping Address -->
+            <div class="col-sm-6" style="margin-top: 20px;">
+              <h4>{{ text_shipping_address|default('Shipping Address') }}</h4>
+              <div class="well well-sm">
+                <strong>{{ order_info.shipping_firstname }} {{ order_info.shipping_lastname }}</strong><br>
+                {% if order_info.shipping_company %}{{ order_info.shipping_company }}<br>{% endif %}
+                {{ order_info.shipping_address_1 }}<br>
+                {% if order_info.shipping_address_2 %}{{ order_info.shipping_address_2 }}<br>{% endif %}
+                {{ order_info.shipping_city }}, {{ order_info.shipping_postcode }}<br>
+                {{ order_info.shipping_country }}
+              </div>
+              
+              <!-- Shipping Cost Information -->
+              {% if order_totals %}
+              <div class="well well-sm" style="margin-top: 10px; background-color: #f8f9fa;">
+                <h5 style="margin-top: 0; margin-bottom: 10px;">{{ text_shipping_cost|default('Shipping Cost') }}</h5>
+                {% for total in order_totals %}
+                  {% if total.code == 'shipping' %}
+                    <div class="row">
+                      <div class="col-sm-6">
+                        <strong>{{ total.title }}</strong>
+                      </div>
+                      <div class="col-sm-6 text-right">
+                        <strong>
+                           {{ total.value|number_format(2) }}
+                        </strong>
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
           </div>
+
           
+          <div class="panel-heading">
+          <h1 class="panel-title">{{ payment_outcome_title }}</h1>
+        </div>
           <!-- Note: Order data may have been updated via hpay_forwarded_payment_response -->
           
           <!-- Transaction User Info -->
           {% if transaction_user_info %}
-          <div class="well well-sm" style="margin-top: 20px;">
+          <div class="well well-sm" style="margin-top: 20px;max-width:420px;">
             <h4>{{ text_transaction_details }}</h4>
             <div class="row">
               {% for key, value in transaction_user_info %}
-              <div class="col-sm-6" style="margin-bottom: 10px;">
+              <div class="col-sm-12" style="margin:0px;padding:0px;padding-left:30px;">
                 <strong>{{ key }}:</strong> {{ value }}
               </div>
               {% endfor %}
@@ -53,9 +164,6 @@
           <!-- Fiscal HTML from HolestPay -->
           {% if fiscal_html %}
           <div class="panel panel-info" style="margin-top: 20px;">
-            <div class="panel-heading">
-              <h4 class="panel-title">{{ text_fiscal_information }}</h4>
-            </div>
             <div class="panel-body">
               {{ fiscal_html|raw }}
             </div>
@@ -78,9 +186,6 @@
           <div class="buttons clearfix" style="margin-top: 30px;">
             <div class="pull-right">
               <a href="{{ continue }}" class="btn btn-primary">{{ button_continue }}</a>
-            </div>
-            <div class="pull-left">
-              <a href="{{ order }}" class="btn btn-default">{{ text_view_order }}</a>
             </div>
           </div>
           

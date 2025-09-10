@@ -2,10 +2,22 @@
 namespace Opencart\Catalog\Model\Payment;
 
 class Holestpay extends \Opencart\System\Engine\Model {
+
+    public function getHPayLanguageCode() {
+        $current_language = $this->language->get('code');
+        if(stripos($current_language,'yu') !== false ){
+            return 'rs';
+        }else if(stripos($current_language,'sr') !== false || stripos($current_language,'rs') !== false){
+            return 'rs-cyr';
+        }else if(stripos($current_language,'mk') !== false ){
+            return 'mk';
+        }else{
+            return strtolower(substr($current_language,0,2));
+        }
+    }
     
     public function getMethod($address, $total = null) {
         // Debug logging to check if method is being called
-        error_log('HolestPay getMethod() called with address: ' . print_r($address, true));
         
         $this->load->language('payment/holestpay');
         
@@ -22,45 +34,33 @@ class Holestpay extends \Opencart\System\Engine\Model {
         $method_data = array();
         
         // Debug configuration values
-        error_log('HolestPay Debug - Status: ' . ($status ? 'true' : 'false'));
-        error_log('HolestPay Debug - payment_holestpay_status: ' . $this->config->get('payment_holestpay_status'));
-        error_log('HolestPay Debug - merchant_site_uid: ' . $this->config->get('payment_holestpay_merchant_site_uid'));
-        
         if ($status && $this->config->get('payment_holestpay_status')) {
-            error_log('HolestPay Debug - Conditions met, getting payment methods...');
             // Get HolestPay payment methods from configuration
             $payment_methods = $this->getHolestPayMethods();
-            error_log('HolestPay Debug - Found ' . count($payment_methods) . ' payment methods');
             
             if (!empty($payment_methods)) {
-                // CRITICAL: Return single payment method object with sub-methods
-                // Similar to how shipping methods work in OpenCart
-                
-                $hpay_methods = array();
-                foreach ($payment_methods as $hpay_method) {
-                    $hpay_methods[] = array(
-                        'code'       => 'holestpay_' . $hpay_method['hpay_id'],
-                        'title'      => $hpay_method['method_name'],
-                        'terms'      => '',
-                        'sort_order' => $hpay_method['sort_order'],
-                        'hpay_id'    => $hpay_method['hpay_id'],
-                        'supports_mit' => $hpay_method['supports_mit'],
-                        'supports_cof' => $hpay_method['supports_cof']
-                    );
+
+				$p_names = array();
+
+                $hpaylang = $this->getHPayLanguageCode();
+                foreach($payment_methods as $index => $payment_method){
+					$p_names[] = $payment_method["Name"];
+                    if(isset($payment_method['localized']) && isset($payment_method['localized'][$hpaylang])){
+                        $payment_methods[$index] = array_merge($payment_method, $payment_method['localized'][$hpaylang]);
+                    }
                 }
-                
+
                 // Return single method object with sub-methods array
                 $method_data = array(
                     'code'       => 'holestpay',
-                    'title'      => $this->language->get('text_title') ?: 'HolestPay',
+                    'title'      => implode(" | ",$p_names),
                     'terms'      => '',
                     'sort_order' => $this->config->get('payment_holestpay_sort_order') ?: 1,
-                    'hpay_methods' => $hpay_methods // Sub-methods go here
+                    'hpay_methods' => $payment_methods,
+                    'hpaylang'     => $hpaylang
                 );
             }
         }
-        
-        error_log('HolestPay Debug - Returning method_data: ' . print_r($method_data, true));
         return $method_data;
     }
     
@@ -78,22 +78,12 @@ class Holestpay extends \Opencart\System\Engine\Model {
             foreach ($config_data['POS']['payment'] as $method_data) {
                 // Only include enabled payment methods (using correct field names from webhook sample)
                 if (isset($method_data['Enabled']) && $method_data['Enabled'] === true) {
-                    $payment_methods[] = array(
-                        'hpay_id' => $method_data['Uid'],
-                        'method_name' => $method_data['SystemTitle'] ?? $method_data['Uid'],
-                        'sort_order' => $method_data['Order'] ?? 0,
-                        'enabled' => $method_data['Enabled'],
-                        'supports_mit' => isset($method_data['MIT']) ? $method_data['MIT'] : false,
-                        'supports_cof' => isset($method_data['COF']) ? $method_data['COF'] : false,
-                        'environment' => $this->config->get('payment_holestpay_environment'),
-                        'merchant_site_uid' => $this->config->get('payment_holestpay_merchant_site_uid'),
-                        'payment_type' => $method_data['PaymentType'] ?? '',
-                        'instant' => $method_data['Instant'] ?? false,
-                        'hpay_site_method_id' => $method_data['HPaySiteMethodId']
-                    );
+                    $method_data['hpay_id'] = $method_data['HPaySiteMethodId'];
+                    $method_data['sort_order'] = $method_data['Order'];
+                    $payment_methods[] = $method_data;
                 }
             }
-            
+            $current_language = 
             // Sort by sort_order
             usort($payment_methods, function($a, $b) {
                 return $a['sort_order'] <=> $b['sort_order'];
@@ -116,20 +106,10 @@ class Holestpay extends \Opencart\System\Engine\Model {
         if (isset($config_data['POS']['shipping']) && is_array($config_data['POS']['shipping'])) {
             foreach ($config_data['POS']['shipping'] as $method_data) {
                 // Only include enabled shipping methods (using correct field names from webhook sample)
-                if (isset($method_data['Enabled']) && $method_data['Enabled'] === true) {
-                    $shipping_methods[] = array(
-                        'hpay_id' => $method_data['Uid'],
-                        'method_name' => $method_data['SystemTitle'] ?? $method_data['Uid'],
-                        'method_code' => $method_data['ShippingMethod'],
-                        'sort_order' => $method_data['Order'] ?? 0,
-                        'enabled' => $method_data['Enabled'],
-                        'cost' => 0, // Cost calculated elsewhere
-                        'tax_class_id' => 0,
-                        'environment' => $this->config->get('payment_holestpay_environment'),
-                        'merchant_site_uid' => $this->config->get('payment_holestpay_merchant_site_uid'),
-                        'hpay_site_method_id' => $method_data['HPaySiteMethodId'],
-                        'instant' => $method_data['Instant'] ?? false
-                    );
+                if (isset($method_data['Enabled']) && $method_data['Enabled'] === true && !$method_data['Hidden']) {
+                    $method_data['hpay_id'] = $method_data['HPaySiteMethodId'];
+                    $method_data['sort_order'] = $method_data['Order'];
+                    $shipping_methods[] = $method_data;
                 }
             }
             
@@ -189,8 +169,8 @@ class Holestpay extends \Opencart\System\Engine\Model {
         // Get cart data
         $cart_data = $this->getCartData();
         
-        // Generate order items
-        $order_items = $this->generateOrderItems($order_info);
+        // Generate order items (without shipping for cart data, but with fees)
+        $order_items = $this->generateOrderItems($order_info, false);
         
         $hpay_data = array(
             'merchant_site_uid' => $this->config->get('payment_holestpay_merchant_site_uid'),
@@ -230,35 +210,173 @@ class Holestpay extends \Opencart\System\Engine\Model {
     }
     
     public function getCartData() {
-        $cart_data = array(
-            'cart_amount' => $this->cart->getTotal(),
-            'order_currency' => $this->session->data['currency'],
-            'order_items' => array()
-        );
-        
-        // Get cart products
-        foreach ($this->cart->getProducts() as $product) {
-            $cart_data['order_items'][] = array(
-                'posuid' => $product['product_id'],
-                'type' => 'product',
-                'name' => $product['name'],
-                'sku' => $product['model'],
-                'qty' => $product['quantity'],
-                'price' => $product['price'],
-                'subtotal' => $product['total'],
-                'virtual' => false
+        try{
+            // Calculate total including shipping (cart total already includes taxes)
+            $cart_total = $this->cart->getTotal();
+            $shipping_cost = 0.0;
+
+            // Insert HolestPay shipping methods dynamically using helper class
+            require_once(__DIR__ . '/../shipping/holestpay_shipping_helper.php');
+            
+            // Get shipping address for method calculation
+            $address = array();
+            if (isset($this->session->data['shipping_address'])) {
+                $address = $this->session->data['shipping_address'];
+            }
+            
+            // Create helper instance
+            $shipping_helper = new HolestPayShippingHelper($this->registry);
+            
+            // Get enabled HolestPay shipping methods
+            $hpay_shipping_methods = $shipping_helper->getHolestPayShippingMethods($address);
+
+            // Get cart data for shipping calculation
+            $cart_weight = 0;
+            $cart_amount = $cart_total;
+            $cart_currency = $this->session->data['currency'];
+            
+            foreach ($this->cart->getProducts() as $product) {
+                $cart_weight += $product['weight'] * $product['quantity'];
+            }
+
+            if(!isset($this->session->data['needs_reload'])){   
+                $this->session->data['needs_reload'] = 0;
+            }
+
+            $is_hpay_shipping_id = null;
+            // Get shipping cost from session for the selected shipping method
+            if (isset($this->session->data['shipping_methods'])) {
+                $selected_method = isset($this->session->data['shipping_method']) ? $this->session->data['shipping_method'] : "";
+                foreach ($this->session->data['shipping_methods'] as $key => $shipping_method) {
+                    $this->session->data['shipping_methods'][$key]["hpay_checked"] = 1;
+                    if (isset($shipping_method['quote'])) {
+                        foreach ($shipping_method['quote'] as $quote_key => $quote) {
+                            //check if there is hpay shipping method with same name
+                            foreach ( $hpay_shipping_methods as $hpay_shipping_method) {
+                                if (trim(strtolower($hpay_shipping_method['method_name'])) === trim(strtolower($shipping_method['title']))) {
+                                    //this is connected hpay shipping method
+                                    $cost = $shipping_helper->calculateShippingCost($hpay_shipping_method, $cart_weight, $cart_amount, $cart_currency, $address);
+                                    
+                                    if($this->session->data['shipping_methods'][$key]['quote'][$quote_key]['cost'] != $cost){
+                                        $this->session->data['needs_reload'] = time();
+                                    }
+                                    
+                                    $this->session->data['shipping_methods'][$key]['quote'][$quote_key]['cost'] = $cost;
+                                    $this->session->data['shipping_methods'][$key]['quote'][$quote_key]['text'] = $cost . " " . $this->session->data['currency'];
+                                    $is_hpay_shipping_id = $hpay_shipping_method['hpay_id'];
+                                    $quote['cost'] = $cost;
+                                    break;
+                                }
+                            }
+
+                            if (isset($quote['code']) && $quote['code'] === $selected_method && isset($quote['cost'])) {
+                                $shipping_cost = (float)$quote['cost'];
+                            }
+                        }
+                    }
+                }
+            }
+            
+            $order_total = $cart_total + $shipping_cost;
+            $cart_data = array(
+                'cart_amount'    => $cart_total,
+                'order_amount'   => $order_total,
+                'order_currency' => $this->session->data['currency'],
+                'order_items'    => array(),
+                'order_billing'  => array(),
+                'order_shipping' => array(),
+                'shipping_cost'  => $shipping_cost,
+                'needs_reload'   => $this->session->data['needs_reload']
             );
+
+            if( $is_hpay_shipping_id ){
+                $cart_data['shipping_method'] = $is_hpay_shipping_id;
+            }else{
+                $cart_data['shipping_method'] = '';
+            }
+
+            //$cart_data['session_data'] = $this->session->data;
+            
+            // Get cart products
+            foreach ($this->cart->getProducts() as $product) {
+                $cart_data['order_items'][] = array(
+                    'posuid' => $product['product_id'],
+                    'type' => 'product',
+                    'name' => $product['name'],
+                    'sku' => $product['model'],
+                    'qty' => $product['quantity'],
+                    'price' => $product['price'],
+                    'subtotal' => $product['total'],
+                    'virtual' => false
+                );
+            }
+            
+            // Get billing and shipping addresses, with fallback logic
+            $billing_address = isset($this->session->data['payment_address']) ? $this->session->data['payment_address'] : array();
+            $shipping_address = isset($this->session->data['shipping_address']) ? $this->session->data['shipping_address'] : array();
+            
+            // If billing address is missing, copy from shipping address
+            if (empty($billing_address) && !empty($shipping_address)) {
+                $billing_address = $shipping_address;
+            }
+            
+            // If shipping address is missing, copy from billing address
+            if (empty($shipping_address) && !empty($billing_address)) {
+                $shipping_address = $billing_address;
+            }
+            
+            // Get customer data for email and other customer info
+            $customer_data = isset($this->session->data['customer']) ? $this->session->data['customer'] : array();
+            
+            // Set billing data - try customer data first, then fall back to address data
+            $cart_data['order_billing'] = array(
+                'email' => isset($customer_data['email']) ? $customer_data['email'] : (isset($billing_address['email']) ? $billing_address['email'] : ''),
+                'first_name' => isset($customer_data['firstname']) ? $customer_data['firstname'] : (isset($billing_address['firstname']) ? $billing_address['firstname'] : ''),
+                'last_name' => isset($customer_data['lastname']) ? $customer_data['lastname'] : (isset($billing_address['lastname']) ? $billing_address['lastname'] : ''),
+                'phone' => isset($customer_data['telephone']) ? $customer_data['telephone'] : (isset($billing_address['telephone']) ? $billing_address['telephone'] : ''),
+                'is_company' => 0,
+                'company' => isset($billing_address['company']) ? $billing_address['company'] : '',
+                'company_tax_id' => '',
+                'company_reg_id' => '',
+                'address' => isset($billing_address['address_1']) ? $billing_address['address_1'] : '',
+                'address2' => isset($billing_address['address_2']) ? $billing_address['address_2'] : '',
+                'city' => isset($billing_address['city']) ? $billing_address['city'] : '',
+                'country' => isset($billing_address['iso_code_2']) ? $billing_address['iso_code_2'] : '',
+                'state' => isset($billing_address['zone']) ? $billing_address['zone'] : '',
+                'postcode' => isset($billing_address['postcode']) ? $billing_address['postcode'] : '',
+                'lang' => $this->config->get('config_language')
+            );
+            
+            // Set shipping data
+            $cart_data['order_shipping'] = array(
+                'shippable' => true,
+                'is_cod' => false,
+                'first_name' => isset($shipping_address['firstname']) ? $shipping_address['firstname'] : '',
+                'last_name' => isset($shipping_address['lastname']) ? $shipping_address['lastname'] : '',
+                'phone' => isset($shipping_address['telephone']) ? $shipping_address['telephone'] : '',
+                'company' => isset($shipping_address['company']) ? $shipping_address['company'] : '',
+                'address' => isset($shipping_address['address_1']) ? $shipping_address['address_1'] : '',
+                'address2' => isset($shipping_address['address_2']) ? $shipping_address['address_2'] : '',
+                'city' => isset($shipping_address['city']) ? $shipping_address['city'] : '',
+                'country' => isset($shipping_address['iso_code_2']) ? $shipping_address['iso_code_2'] : '',
+                'state' => isset($shipping_address['zone']) ? $shipping_address['zone'] : '',
+                'postcode' => isset($shipping_address['postcode']) ? $shipping_address['postcode'] : ''
+            );
+
+            return $cart_data;
+        }catch(Throwable $ex){
+            error_log("Error in getCartData: " . $ex->getMessage());
+            return null;
         }
-        
-        return $cart_data;
     }
     
-    public function generateOrderItems($order_info) {
+    public function generateOrderItems($order_info, $include_shipping = true) {
         $this->load->model('checkout/order');
         $order_products = $this->model_checkout_order->getProducts($order_info['order_id']);
         
         $items = array();
         
+        // Add products
         foreach ($order_products as $product) {
             $items[] = array(
                 'posuid' => $product['product_id'],
@@ -272,19 +390,73 @@ class Holestpay extends \Opencart\System\Engine\Model {
             );
         }
         
+        // Always add fees, conditionally add shipping
+        $this->load->model('checkout/order');
+        $order_totals = $this->model_checkout_order->getTotals($order_info['order_id']);
+        
+        foreach ($order_totals as $total) {
+            // Skip products (already added above) and subtotal
+            if (in_array($total['code'], ['product', 'subtotal'])) {
+                continue;
+            }
+            
+            // Add shipping costs only if requested
+            if ($total['code'] == 'shipping' && $total['value'] > 0 && $include_shipping) {
+                $items[] = array(
+                    'posuid' => 'shipping_' . $total['code'],
+                    'type' => 'shipping',
+                    'name' => $total['title'],
+                    'sku' => 'SHIPPING',
+                    'qty' => 1,
+                    'price' => $total['value'],
+                    'subtotal' => $total['value'],
+                    'virtual' => false
+                );
+            }
+            // Always add fees (tax, discount, etc.)
+            elseif (in_array($total['code'], ['tax', 'discount', 'coupon', 'voucher', 'reward', 'handling', 'low_order_fee']) && $total['value'] != 0) {
+                $items[] = array(
+                    'posuid' => 'fee_' . $total['code'],
+                    'type' => 'fee',
+                    'name' => $total['title'],
+                    'sku' => strtoupper($total['code']),
+                    'qty' => 1,
+                    'price' => $total['value'],
+                    'subtotal' => $total['value'],
+                    'virtual' => false
+                );
+            }
+        }
+        
         return $items;
     }
     
     public function generateSignature($data, $secret_key) {
-        // Generate request signature for HolestPay
-        $string_to_sign = '';
+        // Generate request signature for HolestPay - matches Node.js implementation
+        $merchant_site_uid = $this->config->get('payment_holestpay_merchant_site_uid');
         
-        // Create signature string based on HolestPay requirements
-        if (isset($data['order_uid']) && isset($data['order_amount']) && isset($data['order_currency'])) {
-            $string_to_sign = $data['order_uid'] . $data['order_amount'] . $data['order_currency'] . $secret_key;
-        }
+        // Format amount to 8 decimal places like in Node.js
+        $amt_for_signature = number_format((float)(isset($data['order_amount']) ? $data['order_amount'] : 0), 8, '.', '');
         
-        return hash('sha256', $string_to_sign);
+        // Build concatenated string in the exact order from Node.js sample
+        // Handle missing properties by checking if key exists and has value
+        $cstr = trim(isset($data['transaction_uid']) ? (string)$data['transaction_uid'] : '') . '|';
+        $cstr .= trim(isset($data['status']) ? (string)$data['status'] : '') . '|';
+        $cstr .= trim(isset($data['order_uid']) ? (string)$data['order_uid'] : '') . '|';
+        $cstr .= trim($amt_for_signature) . '|';
+        $cstr .= trim(isset($data['order_currency']) ? (string)$data['order_currency'] : '') . '|';
+        $cstr .= trim(isset($data['vault_token_uid']) ? (string)$data['vault_token_uid'] : '') . '|';
+        $cstr .= trim(isset($data['subscription_uid']) ? (string)$data['subscription_uid'] : '');
+        $cstr .= trim(isset($data['rand']) ? (string)$data['rand'] : '');
+        
+        // First MD5 hash of concatenated string + merchant_site_uid
+        $cstrmd5 = md5($cstr . $merchant_site_uid);
+        
+        // Then SHA512 hash of MD5 result + secret_key
+        $sha512calc = hash('sha512', $cstrmd5 . $secret_key);
+        
+        // Return lowercase hex as in Node.js
+        return strtolower($sha512calc);
     }
     
     public function getCustomerVaultTokens($customer_id) {

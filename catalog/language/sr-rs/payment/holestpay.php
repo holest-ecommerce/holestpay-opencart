@@ -17,6 +17,7 @@ $_['text_card_ending'] = 'kartica koja završava na';
 $_['text_expires'] = 'ističe';
 $_['text_set_default'] = 'Postavi kao podrazumevani';
 $_['text_remove'] = 'Ukloni';
+$_['text_use_other'] = 'Koristi drugi...';
 $_['text_default'] = 'Podrazumevani';
 
 // Order result page  
@@ -58,3 +59,40 @@ $_['success_subscription'] = 'Uspeh: Pretplata je kreirana';
 // Button
 $_['button_confirm'] = 'Potvrdi plaćanje';
 $_['button_continue'] = 'Nastavi';
+
+// Additional labels for frontend
+$_['text_error_contact_us'] = 'Greška, molimo kontaktirajte nas za pomoć';
+$_['text_remove_token_confirm'] = 'Molimo potvrdite da želite da uklonite token za plaćanje';
+$_['text_error'] = 'Greška';
+$_['text_payment_refused'] = 'Plaćanje odbijeno';
+$_['text_payment_canceled'] = 'Plaćanje otkazano';
+$_['text_payment_error'] = 'Greška u plaćanju';
+$_['text_try_again'] = 'Pokušajte ponovo da platite';
+$_['text_ordering_as_company'] = 'Naručujete kao kompanija?';
+$_['text_company_tax_id'] = 'PIB kompanije';
+$_['text_company_register_id'] = 'Matični broj kompanije';
+$_['text_company_name'] = 'Naziv kompanije';
+
+// Order result page labels
+$_['text_order_items'] = 'Stavke narudžbine';
+$_['text_product_name'] = 'Naziv proizvoda';
+$_['text_model'] = 'Model';
+$_['text_quantity'] = 'Količina';
+$_['text_price'] = 'Cena';
+$_['text_total'] = 'Ukupno';
+$_['text_billing_address'] = 'Adresa za naplatu';
+$_['text_shipping_address'] = 'Adresa za dostavu';
+$_['text_shipping_cost'] = 'Troškovi dostave';
+$_['text_telephone'] = 'Tel';
+$_['text_email'] = 'Email';
+
+// Transaction details labels
+$_['text_order_uid'] = 'UID narudžbe';
+$_['text_authorization_code'] = 'Kod za autorizaciju';
+$_['text_payment_status'] = 'Status plaćanja';
+$_['text_transaction_status_code'] = 'Kod statusa transakcije';
+$_['text_transaction_id'] = 'ID transakcije';
+$_['text_transaction_time'] = 'Vreme transakcije';
+$_['text_3d_status_code'] = 'Kod statusa za 3D transakciju';
+$_['text_amount_order_currency'] = 'Iznos u valuti narudžbe';
+$_['text_amount_payment_currency'] = 'Iznos u valuti plaćanja';

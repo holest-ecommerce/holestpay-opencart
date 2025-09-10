@@ -17,6 +17,7 @@ $_['text_card_ending'] = 'картичка што завршува на';
 $_['text_expires'] = 'истекува';
 $_['text_set_default'] = 'Постави како основен';
 $_['text_remove'] = 'Отстрани';
+$_['text_use_other'] = 'Користи друг...';
 $_['text_default'] = 'Основен';
 
 // Order result page  
@@ -58,3 +59,40 @@ $_['success_subscription'] = 'Успех: Претплатата е креира
 // Button
 $_['button_confirm'] = 'Потврди плаќање';
 $_['button_continue'] = 'Продолжи';
+
+// Additional labels for frontend
+$_['text_error_contact_us'] = 'Грешка, ве молиме контактирајте не за помош';
+$_['text_remove_token_confirm'] = 'Ве молиме потврдете дека сакате да го отстраните токенот за плаќање';
+$_['text_error'] = 'Грешка';
+$_['text_payment_refused'] = 'Плаќањето е одбиено';
+$_['text_payment_canceled'] = 'Плаќањето е откажано';
+$_['text_payment_error'] = 'Грешка во плаќањето';
+$_['text_try_again'] = 'Обидете се повторно да платите';
+$_['text_ordering_as_company'] = 'Нарачувате како компанија?';
+$_['text_company_tax_id'] = 'ПИБ на компанијата';
+$_['text_company_register_id'] = 'Матичен број на компанијата';
+$_['text_company_name'] = 'Име на компанијата';
+
+// Order result page labels
+$_['text_order_items'] = 'Ставки од нарачката';
+$_['text_product_name'] = 'Име на производот';
+$_['text_model'] = 'Модел';
+$_['text_quantity'] = 'Количина';
+$_['text_price'] = 'Цена';
+$_['text_total'] = 'Вкупно';
+$_['text_billing_address'] = 'Адреса за наплата';
+$_['text_shipping_address'] = 'Адреса за достава';
+$_['text_shipping_cost'] = 'Трошоци за достава';
+$_['text_telephone'] = 'Тел';
+$_['text_email'] = 'Email';
+
+// Transaction details labels
+$_['text_order_uid'] = 'UID на нарачка';
+$_['text_authorization_code'] = 'Код за авторизација';
+$_['text_payment_status'] = 'Статус на плаќање';
+$_['text_transaction_status_code'] = 'Код на статус на трансакција';
+$_['text_transaction_id'] = 'ID на трансакција';
+$_['text_transaction_time'] = 'Време на трансакција';
+$_['text_3d_status_code'] = 'Код на статус за 3D трансакција';
+$_['text_amount_order_currency'] = 'Износ во валута на нарачка';
+$_['text_amount_payment_currency'] = 'Износ во валута на плаќање';

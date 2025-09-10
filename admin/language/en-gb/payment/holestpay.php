@@ -25,12 +25,14 @@ $_['entry_order_status'] = 'Order Status (Success)';
 $_['entry_order_status_failed'] = 'Order Status (Failed)';
 $_['entry_geo_zone'] = 'Geo Zone';
 $_['entry_sort_order'] = 'Sort Order';
+$_['entry_insert_footer_logotypes'] = 'Insert Footer Logotypes';
 
 // Help
 $_['help_environment'] = 'Select Sandbox for testing or Production for live transactions.';
 $_['help_merchant_site_uid'] = 'Your unique Merchant Site UID provided by HolestPay.';
 $_['help_secret_key'] = 'Your secret key for secure communication with HolestPay.';
 $_['help_webhook_url'] = 'Copy this URL and configure it in your HolestPay panel to receive order updates and configuration data.';
+$_['help_insert_footer_logotypes'] = 'Enable to insert HolestPay footer logotypes on payment pages.';
 
 // Error
 $_['error_permission'] = 'Warning: You do not have permission to modify HolestPay payment module!';
@@ -48,3 +50,9 @@ $_['text_optional_status_change'] = 'Optional status change:';
 $_['text_no_status_change'] = '-- No status change --';
 $_['text_status_help'] = 'Select a status to explicitly set, or leave empty for automatic detection.';
 $_['button_store_to_hpay'] = 'Store to HolestPay';
+
+// File Sync
+$_['text_files_synced'] = 'Files Auto-Synced';
+$_['text_files_sync_success'] = 'Extension files synchronized successfully';
+$_['text_files_sync_partial'] = 'Some files could not be synchronized';
+$_['text_files_sync_error'] = 'File synchronization failed';
