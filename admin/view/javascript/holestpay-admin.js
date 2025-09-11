@@ -1095,19 +1095,7 @@ var HPayAdmOC = {
     },
     
     addConnectionTest: function() {
-        var container = document.getElementById('holestpay-admin-container');
-        if (container && this.settings.merchant_site_uid) {
-            var testButton = document.createElement('button');
-            testButton.type = 'button';
-            testButton.className = 'btn btn-info';
-            testButton.innerHTML = '<i class="fa fa-plug"></i> Test Connection';
-            testButton.addEventListener('click', this.testConnection.bind(this));
-            
-            var testDiv = document.createElement('div');
-            testDiv.className = 'well';
-            testDiv.appendChild(testButton);
-            container.appendChild(testDiv);
-        }
+        
     },
     
     testConnection: function() {

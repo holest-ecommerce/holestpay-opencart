@@ -873,6 +873,11 @@ if(!class_exists('\Opencart\System\Engine\Controller\Holestpay')){
 			$hpay_clear_cart = isset($this->request->post['hpay_clear_cart']) ? (int)$this->request->post['hpay_clear_cart'] : (isset($this->request->get['hpay_clear_cart']) ? (int)$this->request->get['hpay_clear_cart'] : 0);
 			if($hpay_clear_cart){
 				$this->cart->clear();
+				try{	
+					$this->session->data['order_id'] = null;
+				}catch(Exception $e){
+
+				}
 			}
 			
 			// CRITICAL: Check for hpay_forwarded_payment_response POST parameter
@@ -884,6 +889,9 @@ if(!class_exists('\Opencart\System\Engine\Controller\Holestpay')){
 				$_SESSION['holestpay_webhook_processing'] = true;
 				
 				try {
+					if(stripos($forwarded_response, '&quot;') !== false && stripos($forwarded_response, '&quot;') < 5){
+						$forwarded_response = htmlspecialchars_decode($forwarded_response);
+					}
 					// Decode JSON if it's a string
 					if (is_string($forwarded_response)) {
 						$forwarded_response = json_decode($forwarded_response, true);
@@ -973,7 +981,7 @@ if(!class_exists('\Opencart\System\Engine\Controller\Holestpay')){
 		}
 		
 		private function getPaymentOutcomeTitle($hpay_data) {
-			$status = $hpay_data['status'];
+			$status = isset($hpay_data['status']) ? $hpay_data['status'] : '';
 
 			if(stripos($status, 'SUCCESS') !== false || stripos($status, 'PAID') !== false || stripos($status, 'RESERVED') !== false){
 				return $this->language->get('text_payment_success');

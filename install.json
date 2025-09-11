@@ -1,10 +1,10 @@
 {
-    "name": "HolestPay Payment Gateway for OpenCart 3 & 4",
+    "name": "HolestPay Payment Gateway for OpenCart 4",
     "version": "1.0.0",
     "author": "HolestPay Integration Team",
     "link": "https://pay.holest.com",
-    "compatibility": "3.0.0.0+",
-    "description": "Complete HolestPay payment and shipping integration for OpenCart with support for multiple payment methods, subscriptions, and real-time shipping cost calculation.",
+    "compatibility": "4.0.0.0+",
+    "description": "Complete HolestPay payment and shipping integration for OpenCart 4 with support for multiple payment methods, subscriptions, and real-time shipping cost calculation.",
     "keywords": [
         "payment",
         "holestpay",
@@ -22,7 +22,7 @@
         "documentation": "https://docs.pay.holest.com/opencart"
     },
     "requirements": {
-        "opencart": "3.0.0.0+",
+        "opencart": "4.0.0.0+",
         "php": "7.4+",
         "extensions": [
             "curl",
@@ -39,7 +39,7 @@
         "Admin order management interface",
         "Multi-environment support (Sandbox/Production)",
         "Request signing for secure communication",
-        "OpenCart 3 & 4 compatibility"
+        "OpenCart 4 compatibility"
     ],
     "installation": {
         "type": "extension",
@@ -56,16 +56,13 @@
     "files": {
         "admin": [
             "controller/payment/holestpay.php",
-            "controller/payment/holestpay_opencart3.php",
             "model/payment/holestpay.php",
-            "model/payment/holestpay_opencart3.php",
             "view/template/payment/holestpay.twig",
             "view/javascript/holestpay-admin.js",
             "language/en-gb/payment/holestpay.php"
         ],
         "catalog": [
             "controller/payment/holestpay.php",
-            "controller/payment/holestpay_opencart3.php",
             "model/payment/holestpay.php",
             "model/shipping/holestpay.php",
             "view/template/payment/holestpay.twig",
@@ -142,7 +139,7 @@
                 "Vault token management",
                 "Webhook integration",
                 "Admin order management",
-                "OpenCart 3 & 4 compatibility"
+                "OpenCart 4 compatibility"
             ]
         }
     ]
