@@ -135,7 +135,8 @@ var HPayAdmOC = {
     
     setupOrderManagementTools: function() {
         // Implementation for admin order management tools like Magento
-        console.log('Setting up HolestPay admin order management tools');
+        let self = this;
+		console.log('Setting up HolestPay admin order management tools');
         
         if (!this.isOrderDetailsPage()) {
             return;
@@ -149,6 +150,11 @@ var HPayAdmOC = {
         
         // Load order data and render admin toolbox
         this.loadOrderData(orderId);
+		
+		
+		document.addEventListener("onHPayOrderOpExecuted", function(evt){
+			 self.loadOrderData(orderId);
+		});
     },
     
     isOrderDetailsPage: function() {
@@ -228,6 +234,47 @@ var HPayAdmOC = {
         if (orderData.last_updated) {
             document.getElementById('hpay-last-updated').textContent = orderData.last_updated;
         }
+
+        //here clear then fill table with id = 'hpay-transaction-table' with orderData.Transactions
+         try{
+             var transactionTable = document.getElementById('hpay-transaction-table');
+             transactionTable.innerHTML = '';
+             orderData.Transactions.forEach(function(transaction, index) {
+                 var row = transactionTable.insertRow();
+                 
+                 // Add whitesmoke background to odd rows
+                 if (index % 2 === 0) {
+                     row.style.backgroundColor = '#e8eae5';
+                 }
+                 
+                 // CreatedAt column
+                 row.insertCell().textContent = String(transaction.CreatedAt).replace('.000Z', '');
+                 
+                 // Uid column
+                 row.insertCell().textContent = transaction.Uid;
+                 
+                 // Type column
+                 row.insertCell().textContent = transaction.Type;
+                 
+                 // Status column
+                 row.insertCell().textContent = transaction.Status;
+                 
+                 // Payment amount + currency column
+                 var paymentAmount = '';
+                 var paymentCurrency = '';
+                 if (transaction.Data && transaction.Data.result) {
+                     paymentAmount = parseFloat(transaction.Data.result.payment_amount) || '';
+                     paymentCurrency = transaction.Data.result.payment_currency || '';
+                     if(!isNaN(paymentAmount)){
+                        paymentAmount = paymentAmount.toFixed(2);
+                     }
+                 }
+                 var amountText = paymentAmount && paymentCurrency ? paymentAmount + ' ' + paymentCurrency : '';
+                 row.insertCell().textContent = amountText;
+             });
+         }catch(e){
+             console.error('Error rendering transaction table', e);
+         }
         
         // CRITICAL: Render admin toolbox with possible HolestPay actions
         this.renderAdminToolbox(actionsElement, orderData, HPay);
@@ -1135,6 +1182,7 @@ var HPayAdmOC = {
                 <div class="row">
                     <div class="col-md-6" >
                         <h4 id="hpay-status" style="background: aliceblue;padding: 6px;font-style: italic;font-weight: bold;"></h4>
+						<table id='hpay-transaction-table' cellpadding="5" cellspacing="0"></table>
                     </div>
                     <div id="holestpay-order-actions"class="col-md-6">
                         

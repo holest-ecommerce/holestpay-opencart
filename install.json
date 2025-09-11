@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "author": "HolestPay Integration Team",
     "link": "https://pay.holest.com",
-    "compatibility": "4.0.0.0+",
+    "compatibility": "3.0.0.0+",
     "description": "Complete HolestPay payment and shipping integration for OpenCart with support for multiple payment methods, subscriptions, and real-time shipping cost calculation.",
     "keywords": [
         "payment",
@@ -56,13 +56,16 @@
     "files": {
         "admin": [
             "controller/payment/holestpay.php",
+            "controller/payment/holestpay_opencart3.php",
             "model/payment/holestpay.php",
+            "model/payment/holestpay_opencart3.php",
             "view/template/payment/holestpay.twig",
             "view/javascript/holestpay-admin.js",
             "language/en-gb/payment/holestpay.php"
         ],
         "catalog": [
             "controller/payment/holestpay.php",
+            "controller/payment/holestpay_opencart3.php",
             "model/payment/holestpay.php",
             "model/shipping/holestpay.php",
             "view/template/payment/holestpay.twig",

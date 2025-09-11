@@ -2,6 +2,8 @@
 
 A comprehensive payment and shipping integration module for OpenCart that provides full HolestPay functionality including multiple payment methods, subscriptions, shipping cost calculation, and order management.
 
+> **🔧 OpenCart 3 Compatibility**: This extension includes special compatibility files for OpenCart 3.x. If you're using OpenCart 3 and the extension doesn't appear in Extensions > Payments, see the [OpenCart 3 Installation Guide](#opencart-3-installation) below.
+
 ## Features
 
 ### Payment Processing
@@ -23,32 +25,119 @@ A comprehensive payment and shipping integration module for OpenCart that provid
 - **Webhook Integration**: Automatic order updates from HolestPay system
 
 ### Technical Features
-- **OpenCart 3 & 4 Compatibility**: Single codebase works with both versions
+- **OpenCart 3 & 4 Compatibility**: Single codebase works with both versions using automatic version detection
 - **Multi-environment**: Sandbox and Production environment support
 - **Webhook Processing**: Handles configuration, order updates, and payment results
 - **Database Integration**: Custom tables for HolestPay data storage
 - **JavaScript Integration**: Admin and frontend JavaScript objects
+- **Automatic Compatibility**: Detects OpenCart version and loads appropriate controller files
 
 ## Installation
 
-### Automatic Installation (Recommended)
-1. Download the `holestpay-opencart.zip` package
+### Prerequisites
+- OpenCart 3.0.0.0 or higher (OpenCart 3.x and 4.x supported)
+- PHP 7.4 or higher
+- Required PHP extensions: curl, json, openssl
+- SSL certificate (recommended for production)
+
+### For OpenCart 4.x
+
+#### Automatic Installation (Recommended)
+1. Download the `holestpay.ocmod.zip` package
 2. Go to Extensions → Installer in your OpenCart admin
 3. Upload the zip file
 4. Go to Extensions → Extensions → Payments
 5. Find "HolestPay Payment Gateway" and click Install
 6. Click Edit to configure the module
 
-### Manual Installation
+#### Manual Installation
 1. Extract the zip file
-2. Upload files to your OpenCart directory maintaining the folder structure:
-   ```
-   admin/
-   catalog/
-   install.json
-   ```
+2. Upload files to your OpenCart directory maintaining the folder structure
 3. Go to Extensions → Extensions → Payments
 4. Find "HolestPay Payment Gateway" and click Install
+
+## OpenCart 3 Installation
+
+> **⚠️ Important**: OpenCart 3 uses a different controller structure than OpenCart 4. This extension includes special compatibility files to work with both versions.
+
+### Why OpenCart 3 Needs Special Files?
+
+OpenCart 3 and 4 have different controller structures:
+- **OpenCart 3**: Uses class-based structure (`ControllerPaymentHolestpay`)
+- **OpenCart 4**: Uses namespace-based structure (`Opencart\Admin\Controller\Payment\Holestpay`)
+
+This extension includes both versions and automatically detects which one to use.
+
+### Quick Installation (Recommended)
+
+1. **Download** the `holestpay.ocmod.zip` package
+2. **Upload** all files to your OpenCart directory
+3. **Run the compatibility fix script**:
+   ```bash
+   cd /path/to/your/opencart/
+   php fix_opencart3_compatibility.php
+   ```
+4. **Go to admin panel** → Extensions → Extensions → Payments
+5. **Find "HolestPay"** and click Install
+6. **Click Edit** to configure your settings
+
+### Manual Installation
+
+If the automatic script doesn't work:
+
+1. **Extract** the zip file
+2. **Upload** all files to your OpenCart directory
+3. **Copy OpenCart 3 compatible files**:
+   ```bash
+   # Copy admin files
+   cp admin/controller/payment/holestpay_opencart3.php admin/controller/payment/holestpay.php
+   cp admin/model/payment/holestpay_opencart3.php admin/model/payment/holestpay.php
+   
+   # Copy catalog files
+   cp catalog/controller/payment/holestpay_opencart3.php catalog/controller/payment/holestpay.php
+   ```
+4. **Go to admin panel** → Extensions → Extensions → Payments
+5. **Find "HolestPay"** and click Install
+
+### Troubleshooting
+
+**Problem**: Extension doesn't appear in Extensions > Payments
+
+**Solutions**:
+1. **Check file permissions**:
+   ```bash
+   chmod 755 admin/controller/payment/
+   chmod 644 admin/controller/payment/holestpay.php
+   chmod 755 admin/model/payment/
+   chmod 644 admin/model/payment/holestpay.php
+   chmod 755 catalog/controller/payment/
+   chmod 644 catalog/controller/payment/holestpay.php
+   ```
+
+2. **Clear OpenCart cache**:
+   - Go to Dashboard → Gear Icon → Developer Settings
+   - Click "Refresh" for both Theme and SASS caches
+
+3. **Check error logs**:
+   - Go to System → Maintenance → Error Logs
+   - Look for any HolestPay-related errors
+
+4. **Verify files exist**:
+   ```bash
+   ls -la admin/controller/payment/holestpay.php
+   ls -la admin/model/payment/holestpay.php
+   ls -la catalog/controller/payment/holestpay.php
+   ```
+
+### Files Included for OpenCart 3
+
+- `admin/controller/payment/holestpay_opencart3.php` - OpenCart 3 admin controller
+- `admin/model/payment/holestpay_opencart3.php` - OpenCart 3 admin model
+- `catalog/controller/payment/holestpay_opencart3.php` - OpenCart 3 catalog controller
+- `fix_opencart3_compatibility.php` - Automatic compatibility fix script
+- `OPENCART3_INSTALLATION.md` - Detailed installation guide
+
+For detailed troubleshooting, see [OPENCART3_INSTALLATION.md](OPENCART3_INSTALLATION.md).
 
 ## Configuration
 
@@ -196,7 +285,30 @@ $expected_signature = hash_hmac('sha256', $webhook_data, $secret_key);
 
 ## Troubleshooting
 
-### Common Issues
+### OpenCart 3 Specific Issues
+
+**Q: Extension doesn't appear in Extensions > Payments on OpenCart 3**
+A: This is the most common issue. The solution is to copy the OpenCart 3 compatible files:
+```bash
+# Run the automatic fix script
+php fix_opencart3_compatibility.php
+
+# OR manually copy the files
+cp admin/controller/payment/holestpay_opencart3.php admin/controller/payment/holestpay.php
+cp admin/model/payment/holestpay_opencart3.php admin/model/payment/holestpay.php
+cp catalog/controller/payment/holestpay_opencart3.php catalog/controller/payment/holestpay.php
+```
+
+**Q: "Class not found" errors on OpenCart 3**
+A: This means the wrong controller files are being used. Make sure you've copied the `*_opencart3.php` files to the standard locations.
+
+**Q: Extension installs but doesn't work properly on OpenCart 3**
+A: Check that all three files are copied:
+- `admin/controller/payment/holestpay.php` (copied from holestpay_opencart3.php)
+- `admin/model/payment/holestpay.php` (copied from holestpay_opencart3.php)
+- `catalog/controller/payment/holestpay.php` (copied from holestpay_opencart3.php)
+
+### General Issues
 
 **Payment methods not showing**
 - Check if webhook configuration is correct
@@ -225,11 +337,44 @@ Check logs in:
 - Server error logs
 - Browser developer console
 
+## Quick Reference
+
+### OpenCart 3 Users
+- **Problem**: Extension not visible in Extensions > Payments
+- **Solution**: Run `php fix_opencart3_compatibility.php`
+- **Files**: Use `*_opencart3.php` files for OpenCart 3
+
+### OpenCart 4 Users
+- **Installation**: Standard extension installer works
+- **Files**: Uses namespace-based controllers automatically
+
+### File Structure
+```
+holestpay-opencart/
+├── admin/
+│   ├── controller/payment/
+│   │   ├── holestpay.php              # OpenCart 4 controller
+│   │   ├── holestpay_opencart3.php    # OpenCart 3 controller
+│   │   └── holestpay_compatibility.php # Version detection
+│   └── model/payment/
+│       ├── holestpay.php              # OpenCart 4 model
+│       └── holestpay_opencart3.php    # OpenCart 3 model
+├── catalog/
+│   └── controller/payment/
+│       ├── holestpay.php              # OpenCart 4 controller
+│       ├── holestpay_opencart3.php    # OpenCart 3 controller
+│       └── holestpay_compatibility.php # Version detection
+├── fix_opencart3_compatibility.php    # OpenCart 3 fix script
+├── OPENCART3_INSTALLATION.md          # Detailed OpenCart 3 guide
+└── README.md                          # This file
+```
+
 ## Support
 
 - **Email**: support@pay.holest.com
 - **Website**: https://pay.holest.com/support
 - **Documentation**: https://docs.pay.holest.com/opencart
+- **OpenCart 3 Issues**: See [OPENCART3_INSTALLATION.md](OPENCART3_INSTALLATION.md)
 
 ## License
 

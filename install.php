@@ -19,28 +19,84 @@ class HolestPayInstaller {
      */
     public function install() {
         try {
-            // 1. Copy template files to correct locations
+            // 1. Detect OpenCart version
+            $opencart_version = $this->detectOpenCartVersion();
+            
+            // 2. Copy template files to correct locations
             $this->copyTemplateFiles();
             
-            // 2. Copy language files to correct locations  
+            // 3. Copy language files to correct locations  
             $this->copyLanguageFiles();
             
-            // 3. Copy JavaScript files to correct locations
+            // 4. Copy JavaScript files to correct locations
             $this->copyJavaScriptFiles();
             
-            // 4. Create database tables
+            // 5. Copy compatibility files
+            $this->copyCompatibilityFiles();
+            
+            // 6. Create database tables
             $this->createDatabaseTables();
             
-            // 5. Add order table modifications
+            // 7. Add order table modifications
             $this->addOrderTableModifications();
             
-            // 6. Set default configuration
+            // 8. Set default configuration
             $this->setDefaultConfiguration();
             
-            return array('success' => true, 'message' => 'HolestPay extension installed successfully');
+            return array('success' => true, 'message' => 'HolestPay extension installed successfully for OpenCart ' . $opencart_version);
             
         } catch (Exception $e) {
             return array('success' => false, 'error' => $e->getMessage());
+        }
+    }
+    
+    /**
+     * Detect OpenCart version
+     */
+    private function detectOpenCartVersion() {
+        $version = '4.0.0.0'; // Default to OpenCart 4
+        
+        // Check for OpenCart 3 indicators
+        if (defined('VERSION')) {
+            $version_parts = explode('.', VERSION);
+            if (count($version_parts) >= 3) {
+                $major_version = (int)$version_parts[0];
+                if ($major_version < 4) {
+                    $version = '3.0.0.0';
+                }
+            }
+        }
+        
+        // Check for namespace indicators (OpenCart 4 uses namespaces)
+        if (class_exists('Opencart\System\Engine\Controller')) {
+            $version = '4.0.0.0';
+        } elseif (class_exists('Controller')) {
+            $version = '3.0.0.0';
+        }
+        
+        return $version;
+    }
+    
+    /**
+     * Copy compatibility files
+     */
+    private function copyCompatibilityFiles() {
+        $compatibility_files = array(
+            'admin/controller/payment/holestpay_compatibility.php' => 'admin/controller/payment/holestpay_compatibility.php',
+            'catalog/controller/payment/holestpay_compatibility.php' => 'catalog/controller/payment/holestpay_compatibility.php'
+        );
+        
+        foreach ($compatibility_files as $source => $destination) {
+            if (file_exists(DIR_OPENCART . $source)) {
+                $dest_dir = dirname(DIR_OPENCART . $destination);
+                if (!is_dir($dest_dir)) {
+                    mkdir($dest_dir, 0755, true);
+                }
+                
+                if (!copy(DIR_OPENCART . $source, DIR_OPENCART . $destination)) {
+                    throw new Exception("Failed to copy compatibility file: {$source} to {$destination}");
+                }
+            }
         }
     }
     
